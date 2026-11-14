@@ -1,0 +1,1081 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="color-scheme" content="light"/>
+<link rel="icon" href="data:,"/>
+<title>Bill PDF & Ảnh sang Excel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{--bg:#F6F7F9;--card:#fff;--navy:#0F2040;--navy2:#162E5C;--orange:#F97316;--orange2:#FFF3E8;--line:#E5E7EB;--mut:#64748B;--green:#15803D;--greenBg:#DCFCE7;--red:#DC2626;--redBg:#FEE2E2;--yellow:#B45309;--yellowBg:#FEF3C7;--radius:16px}
+*{box-sizing:border-box}html,body{overflow-x:clip}html,body{margin:0;background:var(--bg);color:#0F172A;font-family:Inter,system-ui,sans-serif;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font-family:inherit;font-size:16px}button{min-height:48px;cursor:pointer}input,select,textarea{min-height:48px}
+a{color:var(--navy)}
+.top{background:var(--navy);color:#fff;padding:12px 16px 14px}.topIn{max-width:1100px;margin:0 auto}
+.top h1{margin:0;font-size:22px;line-height:1.15;font-weight:900;letter-spacing:-.02em}.top p{margin:4px 0 0;color:#CBD5E1;font-size:13.5px;line-height:1.45;max-width:720px}
+.tabs{position:sticky;top:0;z-index:30;background:var(--bg);padding:10px 14px 2px}
+.tabsIn{max-width:1100px;margin:0 auto;display:flex;gap:8px}
+.tabBtn{flex:1;border:1.5px solid var(--navy);background:#fff;color:var(--navy);border-radius:12px;font-weight:800;font-size:15px;padding:0 8px;min-height:48px}
+.tabBtn.on{background:var(--navy);color:#fff}
+.codeBox{background:#0B1526;color:#D6E4F5;border-radius:12px;padding:14px;overflow:auto;max-height:440px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.55;white-space:pre;margin:0}
+.copyMsg{display:none;margin-top:10px}.copyMsg.show{display:block}
+details.more{margin-top:10px}details.more summary{font-weight:700;font-size:14px;padding:6px 0;cursor:pointer;color:var(--navy)}
+.wrap{max-width:1100px;margin:0 auto;padding:10px 14px 90px}
+.steps{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:14px}
+.grid2>* ,.card{min-width:0}.tableWrap{max-width:100%}#prevName{word-break:break-word;overflow-wrap:anywhere}
+.step{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;gap:10px;align-items:flex-start}.step b.num{width:36px;height:36px;flex:0 0 36px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:18px}.step.on b.num{background:var(--orange)}.step strong{display:block;font-size:14px}.step span{font-size:13px;color:var(--mut);line-height:1.4;display:block;margin-top:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 4px 20px rgba(15,32,64,.04)}
+.card h2{margin:0 0 4px;font-size:18px}.card h3{margin:14px 0 8px;font-size:16px}.hint{color:var(--mut);font-size:13.5px;line-height:1.5}
+.drop{border:2px dashed #CBD5E1;border-radius:16px;background:#F8FAFC;padding:22px 14px;text-align:center}.drop.drag{border-color:var(--orange);background:var(--orange2)}
+.drop .big{font-size:40px;line-height:1}.btn{border:0;border-radius:12px;padding:12px 18px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}.btnNavy{background:var(--navy);color:#fff}.btnOrange{background:var(--orange);color:#fff}.btnWhite{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}.btnGhost{background:#F1F5F9;color:var(--navy);border:1px solid var(--line)}.btnRed{background:#fff;color:var(--red);border:1.5px solid #FECACA}.btn:disabled{opacity:.55}
+.rowBtns{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}.rowBtns .btn{flex:1;min-width:150px}
+.progressWrap{display:none;margin-top:14px}.progressWrap.show{display:block}.bar{height:12px;background:#E2E8F0;border-radius:999px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--orange);transition:width .3s}.statusText{font-size:14px;font-weight:600;margin-top:8px}
+.queue{display:grid;gap:8px;margin-top:12px}.qItem{display:flex;gap:10px;align-items:center;background:#F8FAFC;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;text-align:left;width:100%}.qItem.active{border-color:var(--orange);background:var(--orange2)}.qItem .fn{font-weight:700;font-size:14px;word-break:break-all}.qItem .fs{font-size:13px;color:var(--mut)}
+.pill{font-size:12px;font-weight:800;padding:5px 8px;border-radius:999px;white-space:nowrap}.pill.ok{background:var(--greenBg);color:var(--green)}.pill.warn{background:var(--yellowBg);color:var(--yellow)}.pill.err{background:var(--redBg);color:var(--red)}.pill.wait{background:#E2E8F0;color:#475569}
+.grid2{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:900px){.grid2{grid-template-columns:420px 1fr}.top h1{font-size:25px}}
+.previewBox{background:#0F172A;border-radius:12px;min-height:320px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}.previewBox img{max-width:100%;max-height:560px;display:block}.previewBox canvas{max-width:100%;height:auto}.previewEmpty{color:#CBD5E1;text-align:center;padding:30px 16px;line-height:1.6;font-size:15px}
+label.f{display:block;margin-bottom:12px}label.f span{display:block;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px}label.f input,label.f textarea,label.f select{width:100%;border:1.5px solid #CBD5E1;border-radius:10px;padding:10px 12px;background:#fff}label.f textarea{min-height:72px;resize:vertical}
+.cols2{display:grid;grid-template-columns:1fr;gap:0 12px}@media(min-width:640px){.cols2{grid-template-columns:1fr 1fr}.cols3{grid-template-columns:1fr 1fr 1fr}}
+.cols3{display:grid;grid-template-columns:1fr;gap:0 12px}
+table{width:100%;min-width:660px;border-collapse:collapse;font-size:14px}th{background:var(--navy);color:#fff;text-align:left;padding:10px 8px;font-size:13px}td{border-bottom:1px solid var(--line);padding:6px;vertical-align:top}td input{width:100%;border:1px solid #CBD5E1;border-radius:8px;padding:8px;min-height:44px!important;font-size:15px!important}
+.tableWrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+.warnBox{border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.6;margin-top:12px;display:none}.warnBox.show{display:block}.warnBox.ok{background:var(--greenBg);color:#14532D}.warnBox.bad{background:var(--redBg);color:#7F1D1D}.warnBox.mid{background:var(--yellowBg);color:#78350F}
+.totalBox{background:#F8FAFC;border:1px solid var(--line);border-radius:12px;padding:14px}
+.noteTag{background:var(--navy);color:#fff;border-radius:10px;padding:12px 14px;font-size:14px;line-height:1.55;margin-bottom:12px}.noteTag b{color:#FDBA74}
+details.raw{margin-top:12px}details.raw textarea{width:100%;min-height:140px;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:13px}
+.stickyBar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 14px;z-index:20;box-shadow:0 -6px 24px rgba(0,0,0,.08)}.stickyIn{max-width:1100px;margin:0 auto;display:flex;gap:10px}.stickyIn .btn{flex:1}
+.small{font-size:13px;color:var(--mut);line-height:1.55}
+.kpi{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}.kpi div{background:#F8FAFC;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}.kpi b{font-size:20px;display:block}.kpi span{font-size:12px;color:var(--mut);font-weight:700}
+html{scroll-padding-top:104px}
+.card{scroll-margin-top:104px}
+.qEmpty{border:2px dashed #CBD5E1;border-radius:12px;background:#F8FAFC;color:var(--mut);font-size:14.5px;font-weight:600;text-align:center;padding:18px 14px;line-height:1.55}
+</style>
+</head>
+<body>
+<header class="top"><div class="topIn">
+<h1>Bill PDF &amp; Ảnh → Excel</h1>
+<p>Tải hóa đơn lên → kiểm tra số liệu → xuất Excel. File chỉ đọc ngay trên máy của bạn, không gửi lên máy chủ nào.</p>
+</div></header>
+
+<nav class="tabs"><div class="tabsIn">
+<button class="tabBtn on" id="tabBtnBill" type="button">📄 Chuyển Bill → Excel</button>
+<button class="tabBtn" id="tabBtnEmail" type="button">📧 Tự lưu từ Email</button>
+</div></nav>
+
+<div class="wrap">
+<div id="tabBill">
+<div class="steps">
+<div class="step on"><b class="num">1</b><div><strong>Tải lên</strong><span>Kéo thả PDF hoặc ảnh bill vào ô bên dưới</span></div></div>
+<div class="step"><b class="num">2</b><div><strong>Kiểm tra &amp; sửa</strong><span>Xem lại từng ô, sửa tay nếu cần</span></div></div>
+<div class="step"><b class="num">3</b><div><strong>Xuất Excel</strong><span>Tải file .xlsx gồm 3 sheet</span></div></div>
+</div>
+
+<!-- STEP 1 -->
+<section class="card" id="step1">
+<h2>Bước 1 — Tải hóa đơn lên</h2>
+<p class="hint">Nhận <b>nhiều file cùng lúc</b>, kể cả <b>cả thư mục</b>: <b>XML</b> hóa đơn điện tử (chuẩn nhất), <b>PDF</b> (có chữ sẵn hoặc scan), <b>ảnh</b> chụp bill, <b>ZIP</b> (tự bung). Cùng 1 hóa đơn có cả PDF + XML thì app <b>tự gộp thành 1</b>, lấy số theo XML.</p>
+<details class="more"><summary>Xem thêm: ảnh chụp màn hình điện thoại thì sao?</summary>
+<p class="hint" style="margin:6px 0 0">Ảnh chụp màn hình điện thoại vẫn dùng được — app tự cắt bỏ thanh giờ/pin ở trên, nút bấm và thanh công cụ ở dưới, chỉ tập trung vào tờ hóa đơn ở giữa. Nếu cắt chưa đúng, hãy chỉnh 2 thanh trượt ở phần “Xem trước file” bên dưới.</p></details>
+<div class="drop" id="dropZone">
+<div class="big">🧾</div>
+<p style="font-weight:800;font-size:17px;margin:10px 0 4px">Kéo &amp; thả file — hoặc cả thư mục — vào đây</p>
+<p class="hint" style="margin:0">hoặc bấm nút bên dưới để chọn file / thư mục từ máy</p>
+<div class="rowBtns" style="justify-content:center">
+<label class="btn btnOrange" style="flex:0 1 auto">📁 Chọn PDF / Ảnh / XML / ZIP<input type="file" id="fileInput" accept=".pdf,.xml,.zip,image/*" multiple hidden></label>
+<label class="btn btnNavy" style="flex:0 1 auto">🗂 Chọn cả thư mục<input type="file" id="folderInput" webkitdirectory hidden></label>
+<button class="btn btnWhite" id="btnManual" type="button" style="flex:0 1 auto">✏️ Nhập tay từ đầu</button>
+</div>
+</div>
+<div class="progressWrap" id="progWrap"><div class="bar"><i id="progBar"></i></div><div class="statusText" id="progText">Đang chuẩn bị…</div></div>
+<div class="queue" id="queue"></div>
+<div class="kpi"><div><b id="kpiCount">0</b><span>HÓA ĐƠN</span></div><div><b id="kpiItems">0</b><span>DÒNG HÀNG</span></div><div><b id="kpiTotal">0đ</b><span>TỔNG THANH TOÁN</span></div></div>
+</section>
+
+<div class="grid2">
+<!-- PREVIEW -->
+<section class="card">
+<h2>Xem trước file</h2>
+<p class="hint" id="prevName">Đang xem hóa đơn đang chọn ở danh sách trên.</p>
+<div class="previewBox" id="previewBox"><div class="previewEmpty">Chưa có ảnh xem trước.<br>Tải file hóa đơn lên ở Bước 1 — ảnh xem trước của file đang chọn sẽ hiện ở đây.</div></div>
+<div id="cropPanel" style="display:none;margin-top:12px">
+<p class="small" style="margin:0 0 8px"><b>✂️ Vùng hóa đơn trong ảnh:</b> app đã tự bỏ phần giao diện điện thoại thừa. Nếu cắt chưa đúng, kéo 2 thanh dưới đây để chỉnh mép trên / mép dưới rồi bấm đọc lại.</p>
+<label class="f"><span>Cắt bớt ở trên (%)</span><input type="range" id="cropTop" min="0" max="45" step="1" value="0" style="min-height:36px"></label>
+<label class="f"><span>Cắt bớt ở dưới (%)</span><input type="range" id="cropBottom" min="0" max="45" step="1" value="0" style="min-height:36px"></label>
+<div class="rowBtns" style="margin-top:0"><button class="btn btnNavy" id="btnRecrop" type="button">✂️ Cắt &amp; đọc lại</button><button class="btn btnGhost" id="btnFullImg" type="button">↩️ Dùng ảnh gốc</button></div>
+<p class="small" id="cropNote" style="margin-top:8px"></p>
+</div>
+<details class="raw"><summary style="font-weight:700;padding:8px 0">Xem chữ máy đã đọc được (để đối chiếu)</summary><textarea id="rawText" placeholder="Chữ đọc được từ file sẽ hiện ở đây…"></textarea><p class="small">Nếu máy đọc chưa đúng, cứ sửa trực tiếp ở bảng bên cạnh — vẫn xuất Excel bình thường, không bị chặn.</p></details>
+</section>
+
+<!-- FORM -->
+<section class="card" id="step2">
+<h2>Bước 2 — Kiểm tra &amp; sửa số liệu</h2>
+<div class="noteTag" id="mergeTag" style="display:none;background:#14532D">🔗 <b>Đã gộp bản PDF + XML của hóa đơn này</b> thành một hóa đơn duy nhất. Số liệu đang hiển thị lấy theo bản <b>XML</b> — dữ liệu gốc của hóa đơn điện tử — nên yên tâm, và trong Excel cũng chỉ xuất 1 dòng, không trùng.</div>
+<div class="noteTag" id="xmlTag" style="display:none;background:#14532D">📄 <b>Hóa đơn này được đọc từ file XML</b> — dữ liệu gốc do bên bán phát hành, độ tin cậy cao nhất. Chỉ cần liếc kiểm tra nhanh trước khi xuất Excel.</div>
+<div id="warnBox" class="warnBox"></div>
+
+<h3>Thông tin hóa đơn</h3>
+<div class="cols3">
+<label class="f"><span>Ngày hóa đơn (ngày/tháng/năm)</span><input data-f="ngay" placeholder="05/10/2026" inputmode="numeric"></label>
+<label class="f"><span>Số hóa đơn</span><input data-f="soHD" placeholder="Nhập số hóa đơn"></label>
+<label class="f"><span>Ký hiệu</span><input data-f="kyHieu" placeholder="Ví dụ: 1C26TAA"></label>
+</div>
+<div class="cols2">
+<label class="f"><span>Mã của cơ quan thuế (Mã CQT)</span><input data-f="maCQT"></label>
+<label class="f"><span>Mã tra cứu</span><input data-f="maTraCuu"></label>
+</div>
+<label class="f"><span>File nguồn</span><input data-f="fileNguon" readonly></label>
+
+<h3>Bên bán</h3>
+<label class="f"><span>Tên đơn vị bán</span><input data-f="benBan"></label>
+<div class="cols2"><label class="f"><span>MST bên bán</span><input data-f="mstBan" inputmode="numeric"></label><label class="f"><span>Số tài khoản</span><input data-f="stkBan"></label></div>
+<label class="f"><span>Địa chỉ bên bán</span><input data-f="dcBan"></label>
+<label class="f"><span>Ngân hàng bên bán</span><input data-f="nganHangBan" placeholder="Ví dụ: Techcombank — CN Gia Định"></label>
+
+<h3>Bên mua</h3>
+<label class="f"><span>Tên đơn vị mua</span><input data-f="benMua"></label>
+<label class="f"><span>MST bên mua</span><input data-f="mstMua" inputmode="numeric"></label>
+<label class="f"><span>Địa chỉ bên mua</span><input data-f="dcMua"></label>
+<label class="f"><span>Hình thức thanh toán</span><input data-f="hinhThucTT" placeholder="Ví dụ: TM/CK"></label>
+
+<h3>Bảng hàng hóa / dịch vụ</h3>
+<div class="tableWrap"><table><thead><tr><th style="width:36px">STT</th><th>Tên hàng hóa / dịch vụ</th><th style="width:70px">ĐVT</th><th style="width:80px">Số lượng</th><th style="width:120px">Đơn giá</th><th style="width:130px">Thành tiền</th><th style="width:84px">Thuế dòng</th><th style="width:44px"></th></tr></thead><tbody id="itemsBody"></tbody></table></div>
+<button class="btn btnGhost" id="btnAddItem" type="button" style="margin-top:10px;width:100%">＋ Thêm dòng hàng hóa</button>
+
+<h3>Tiền &amp; thuế</h3>
+<div class="totalBox">
+<div class="cols2">
+<label class="f"><span>Cộng tiền hàng (chưa thuế)</span><input data-f="congTienHang" inputmode="numeric" class="money"></label>
+<label class="f"><span>Thuế suất GTGT (%)</span><input data-f="thueSuat" inputmode="decimal" placeholder="8"></label>
+<label class="f"><span>Tiền thuế GTGT</span><input data-f="tienThue" inputmode="numeric" class="money"></label>
+<label class="f"><span>Tổng tiền thanh toán</span><input data-f="tongTT" inputmode="numeric" class="money" style="font-weight:800;border-color:var(--orange)"></label>
+</div>
+<label class="f" style="margin-bottom:0"><span>Số tiền bằng chữ</span><textarea data-f="bangChu" rows="2"></textarea></label>
+</div>
+
+<div class="rowBtns">
+<button class="btn btnWhite" id="btnAutoCalc" type="button">🧮 Tự tính lại tiền</button>
+<button class="btn btnRed" id="btnDeleteInv" type="button">🗑 Xóa hóa đơn này</button>
+</div>
+</section>
+</div>
+
+<!-- STEP 3 -->
+<section class="card" id="step3">
+<h2>Bước 3 — Xuất file Excel</h2>
+<p class="hint">File Excel gồm <b>sheet HoaDon đặt đầu tiên</b> — bảng phẳng đúng mẫu 11 cột (mỗi dòng hàng hóa là 1 dòng; thuế suất &amp; tiền thuế theo từng dòng; tổng thanh toán của cả hóa đơn lặp ở cột cuối) — kèm <b>3 sheet chi tiết</b> phía sau để đối chiếu: DanhSachHoaDon • ChiTietHangHoa • ThongTinHoaDon. Tiền và ngày là <b>ô số / ô ngày thật</b> — cộng, lọc, sắp xếp được ngay.</p>
+<div class="rowBtns">
+<button class="btn btnOrange" id="btnExport" type="button" style="font-size:17px">⬇️ Tải file Excel (.xlsx)</button>
+<button class="btn btnNavy" id="btnExportCsv" type="button">Tải thêm bản CSV (dự phòng)</button>
+</div>
+<details class="more"><summary>Mẹo khi dùng nhiều hóa đơn &amp; lưu ý ảnh mờ</summary>
+<p class="small" style="margin:6px 0 0">💡 Cứ tải lên hết một lượt ở Bước 1, bấm vào từng file trong danh sách chờ để kiểm tra lần lượt, rồi xuất Excel một lần cho tất cả.<br>⚠️ Hóa đơn mờ, nhàu hoặc chữ viết tay: máy có thể đọc sót — nhớ nhìn ô cảnh báo đỏ/vàng ở Bước 2 và đối chiếu với ảnh gốc trước khi dùng số liệu.</p></details>
+</section>
+
+<!-- MỜI SANG TAB EMAIL -->
+<section class="card">
+<h2>📧 Hóa đơn nằm trong email?</h2>
+<p class="hint" style="margin:0 0 10px">Cài 1 lần để Gmail tự lưu PDF + XML của hóa đơn đã thanh toán về Drive — khỏi mở từng email tải file.</p>
+<button class="btn btnNavy" id="btnGoEmail" type="button" style="width:100%">Xem cách tự lưu từ Email →</button>
+</section>
+</div><!-- /tabBill -->
+
+<div id="tabEmail" hidden>
+<section class="card">
+<h2>📧 Tự lưu hóa đơn từ Email về máy</h2>
+<p class="hint" style="margin:0">Gắn nhãn Gmail <b>“Hóa đơn đã thanh toán”</b> cho email nào đã trả xong → đoạn mã bên dưới <b>tự lưu file PDF + XML</b> của các email đó về Google Drive <b>mỗi giờ</b> → kéo thư mục đã lưu vào Tab 1 là xuất Excel hàng loạt.<br>🔒 Mã chạy bằng <b>chính tài khoản Google của bạn</b> — chỉ bạn cấp quyền, không ai khác truy cập được email hay Drive của bạn.</p>
+</section>
+
+<section class="card">
+<h2>Cài đặt 1 lần — khoảng 5 phút</h2>
+<div class="steps" style="grid-template-columns:1fr;margin:10px 0 0">
+<div class="step"><b class="num">1</b><div><strong>Mở Apps Script</strong><span>Vào <b>script.google.com</b> bằng đúng Gmail nhận hóa đơn → bấm <b>Dự án mới</b> (New project).</span></div></div>
+<div class="step"><b class="num">2</b><div><strong>Dán mã</strong><span>Xóa hết nội dung mẫu có sẵn, dán <b>toàn bộ mã ở khung bên dưới</b> vào → bấm <b>Lưu</b> (hình đĩa mềm / Ctrl+S).</span></div></div>
+<div class="step"><b class="num">3</b><div><strong>Chạy hàm cài đặt</strong><span>Ở thanh chọn hàm phía trên, chọn <b>caiDat</b> → bấm <b>Chạy</b> (Run).</span></div></div>
+<div class="step"><b class="num">4</b><div><strong>Cấp quyền</strong><span>Google hỏi quyền thì bấm <b>Xem lại quyền → chọn tài khoản → Nâng cao (Advanced) → Đi tới dự án (Go to project) → Cho phép (Allow)</b>. Đây là dự án của chính bạn nên cứ yên tâm.</span></div></div>
+<div class="step"><b class="num">5</b><div><strong>Xong!</strong><span>Mã tự chạy mỗi giờ. Kiểm tra ở Drive: thư mục <b>HoaDon_DaThanhToan</b> và file <b>NhatKy_LuuHoaDon</b>. Cài thêm “Google Drive cho máy tính” là file tự về máy.</span></div></div>
+</div>
+</section>
+
+<section class="card">
+<h2>Mã nguồn — sao chép dán vào Apps Script</h2>
+<p class="hint" style="margin:0 0 10px">Bấm nút sao chép rồi dán vào Apps Script ở Bước 2, hoặc tải file <b>Code.gs</b> về để mở xem / lưu trữ.</p>
+<div class="rowBtns" style="margin:0 0 12px">
+<button class="btn btnOrange" id="btnCopyCode" type="button">📋 Sao chép mã</button>
+<button class="btn btnNavy" id="btnDlCode" type="button">⬇ Tải file Code.gs</button>
+</div>
+<div class="warnBox ok copyMsg" id="copyMsg">✅ <b>Đã sao chép toàn bộ mã.</b> Giờ qua script.google.com, dán vào dự án (Ctrl+V) rồi làm tiếp Bước 3 ở trên nhé.</div>
+<pre class="codeBox" id="codePre"></pre>
+<details class="more"><summary>Mã này làm gì, có an toàn không?</summary>
+<p class="small" style="margin:6px 0 0">Mã chỉ làm đúng 3 việc: đọc các email có nhãn “Hóa đơn đã thanh toán”, tải file PDF/XML đính kèm (bung cả ZIP) vào thư mục Drive “HoaDon_DaThanhToan”, và ghi nhật ký vào file Sheet “NhatKy_LuuHoaDon”. Email đã lưu được gắn thêm nhãn “Đã lưu file hóa đơn” nên không lưu trùng. Mã không gửi dữ liệu đi nơi nào khác. Muốn ngừng: vào script.google.com → mục Kích hoạt (Triggers) → xóa hẹn giờ, hoặc thu hồi quyền tại myaccount.google.com/permissions.</p></details>
+</section>
+</div><!-- /tabEmail -->
+</div>
+
+<div class="stickyBar"><div class="stickyIn"><button class="btn btnGhost" id="btnTop" type="button">↑ Lên đầu</button><button class="btn btnOrange" id="btnExport2" type="button">⬇️ Xuất Excel ngay</button></div></div>
+
+<script type="text/plain" id="gsCode">
+/*************************************************************
+ * TỰ LƯU HÓA ĐƠN TỪ EMAIL — Bill PDF & Ảnh sang Excel
+ * ------------------------------------------------------------
+ * Cách hoạt động:
+ *  1. Trong Gmail, gắn NHÃN "Hóa đơn đã thanh toán" cho các
+ *     email hóa đơn đã trả tiền xong (gắn tay, hoặc đặt Bộ lọc
+ *     Gmail tự gắn theo người gửi / từ khóa).
+ *  2. Script này chạy TỰ ĐỘNG MỖI GIỜ, quét đúng nhãn đó:
+ *     - Tải mọi file đính kèm .PDF và .XML về thư mục Drive
+ *       "HoaDon_DaThanhToan" (file .ZIP chứa hóa đơn cũng được
+ *       tự bung ra, chỉ giữ PDF + XML bên trong).
+ *     - Đổi tên file cho dễ tìm: 2026-10-05_HD123456_tenfile.pdf
+ *       (số hóa đơn đọc từ chính file XML khi có).
+ *     - Ghi 1 dòng nhật ký vào Google Sheet "NhatKy_LuuHoaDon"
+ *       nằm trong cùng thư mục Drive.
+ *     - Gắn thêm nhãn "Đã lưu file hóa đơn" cho email đã xử lý
+ *       và ghi nhớ ID email -> KHÔNG bao giờ lưu trùng.
+ *  3. Trên máy tính, cài "Google Drive cho máy tính" và chọn
+ *     thư mục HoaDon_DaThanhToan -> file tự đồng bộ xuống máy.
+ *
+ * Script chạy bằng chính tài khoản Google của bạn, miễn phí,
+ * không gửi dữ liệu đi nơi nào khác.
+ *
+ * CÀI ĐẶT 1 LẦN: mở menu Chạy (Run) -> chạy hàm caiDat()
+ * rồi cấp quyền khi Google hỏi. Xong là tự chạy mãi.
+ *************************************************************/
+
+// ===== PHẦN ĐƯỢC SỬA — chỉ sửa trong khung này nếu cần =====
+var CAU_HINH = {
+  NHAN_DA_THANH_TOAN: 'Hóa đơn đã thanh toán', // nhãn gắn cho email đã trả tiền
+  NHAN_DA_LUU: 'Đã lưu file hóa đơn',          // nhãn script tự gắn sau khi lưu xong
+  THU_MUC_DRIVE: 'HoaDon_DaThanhToan',         // thư mục Drive chứa PDF + XML
+  TEN_FILE_NHAT_KY: 'NhatKy_LuuHoaDon',        // file Sheet nhật ký trong cùng thư mục
+  SO_EMAIL_MOI_LAN: 50                          // tối đa số email xử lý trong 1 lần chạy
+};
+// ===== HẾT PHẦN SỬA =====
+
+
+/** Chạy 1 lần duy nhất khi cài đặt: tạo nhãn, thư mục, file nhật ký, hẹn giờ mỗi giờ. */
+function caiDat() {
+  var nhanNguon = layHoacTaoNhan_(CAU_HINH.NHAN_DA_THANH_TOAN);
+  layHoacTaoNhan_(CAU_HINH.NHAN_DA_LUU);
+  var thuMuc = layHoacTaoThuMuc_();
+  layHoacTaoNhatKy_(thuMuc);
+
+  // Xóa hẹn giờ cũ (nếu cài lại) rồi tạo hẹn giờ mới: mỗi 1 giờ chạy 1 lần
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'tuLuuHoaDon') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('tuLuuHoaDon').timeBased().everyHours(1).create();
+
+  Logger.log('Cài đặt xong. Thư mục Drive: ' + thuMuc.getUrl());
+  Logger.log('Nhãn cần gắn cho email đã thanh toán: "' + nhanNguon.getName() + '"');
+  tuLuuHoaDon(); // chạy ngay 1 lần đầu
+}
+
+/** Hàm chính — hẹn giờ gọi mỗi giờ, cũng bấm chạy tay được. */
+function tuLuuHoaDon() {
+  var khoa = LockService.getScriptLock();
+  if (!khoa.tryLock(30000)) return; // đang có lần chạy khác thì thôi
+  try {
+    var nhanNguon = GmailApp.getUserLabelByName(CAU_HINH.NHAN_DA_THANH_TOAN);
+    if (!nhanNguon) {
+      Logger.log('Chưa có nhãn "' + CAU_HINH.NHAN_DA_THANH_TOAN + '" — hãy chạy caiDat() trước.');
+      return;
+    }
+    var nhanDaLuu = layHoacTaoNhan_(CAU_HINH.NHAN_DA_LUU);
+    var thuMuc = layHoacTaoThuMuc_();
+    var nhatKy = layHoacTaoNhatKy_(thuMuc);
+    var daXuLy = docDanhSachDaXuLy_();
+    var demFile = 0;
+
+    var threads = nhanNguon.getThreads(0, CAU_HINH.SO_EMAIL_MOI_LAN);
+    for (var i = 0; i < threads.length; i++) {
+      var thread = threads[i];
+      var nhanCuaThread = thread.getLabels().map(function (l) { return l.getName(); });
+      if (nhanCuaThread.indexOf(CAU_HINH.NHAN_DA_LUU) >= 0) continue;
+
+      var xongThread = true;
+      var messages = thread.getMessages();
+      for (var j = 0; j < messages.length; j++) {
+        var msg = messages[j];
+        if (daXuLy[msg.getId()]) continue;
+        try {
+          demFile += luuDinhKemCuaEmail_(msg, thuMuc, nhatKy);
+          daXuLy[msg.getId()] = true;
+        } catch (e) {
+          xongThread = false;
+          Logger.log('Lỗi ở email "' + msg.getSubject() + '": ' + e.message);
+        }
+      }
+      if (xongThread) thread.addLabel(nhanDaLuu);
+    }
+    ghiDanhSachDaXuLy_(daXuLy);
+    Logger.log('Đã lưu thêm ' + demFile + ' file hóa đơn.');
+  } finally {
+    khoa.releaseLock();
+  }
+}
+
+/** Lưu mọi đính kèm PDF/XML (kể cả trong ZIP) của 1 email. Trả về số file đã lưu. */
+function luuDinhKemCuaEmail_(msg, thuMuc, nhatKy) {
+  var ngay = Utilities.formatDate(msg.getDate(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  var dem = 0;
+  var attachments = msg.getAttachments();
+  for (var k = 0; k < attachments.length; k++) {
+    var att = attachments[k];
+    var ten = att.getName() || 'file';
+    var lower = ten.toLowerCase();
+
+    if (lower.slice(-4) === '.zip') {
+      // Bung ZIP hóa đơn điện tử, chỉ giữ PDF + XML bên trong
+      try {
+        var files = Utilities.unzip(att);
+        for (var z = 0; z < files.length; z++) {
+          var tenTrong = (files[z].getName() || '').toLowerCase();
+          if (tenTrong.slice(-4) === '.pdf' || tenTrong.slice(-4) === '.xml') {
+            dem += luuMotFile_(files[z], ngay, msg, thuMuc, nhatKy);
+          }
+        }
+      } catch (e) {
+        Logger.log('Không bung được ZIP ' + ten + ': ' + e.message);
+      }
+    } else if (lower.slice(-4) === '.pdf' || lower.slice(-4) === '.xml') {
+      dem += luuMotFile_(att, ngay, msg, thuMuc, nhatKy);
+    }
+  }
+  return dem;
+}
+
+/** Lưu 1 file vào Drive + ghi nhật ký. */
+function luuMotFile_(blob, ngay, msg, thuMuc, nhatKy) {
+  var tenGoc = blob.getName() || 'hoa-don';
+  var soHD = '';
+  if (tenGoc.toLowerCase().slice(-4) === '.xml') {
+    try {
+      var text = blob.getDataAsString('UTF-8');
+      var m = text.match(/<SHDon>\s*([^<]+?)\s*<\/SHDon>/i);
+      if (m) soHD = '_HD' + m[1].replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+    } catch (e) { /* không đọc được số HĐ thì vẫn lưu bình thường */ }
+  }
+  var tenMoi = ngay + soHD + '_' + tenGoc;
+  // Tránh trùng tên trong thư mục: thêm (2), (3)...
+  var tenCuoi = tenMoi, n = 2, base = tenMoi.replace(/(\.[^.]+)$/, ''), ext = tenMoi.slice(base.length);
+  while (thuMuc.getFilesByName(tenCuoi).hasNext()) { tenCuoi = base + ' (' + n + ')' + ext; n++; }
+
+  var file = thuMuc.createFile(blob.setName(tenCuoi));
+  nhatKy.appendRow([
+    new Date(), msg.getFrom(), msg.getSubject(), tenCuoi,
+    tenCuoi.toLowerCase().slice(-3), file.getUrl(), msg.getId()
+  ]);
+  return 1;
+}
+
+// ---------- Tiện ích nội bộ ----------
+function layHoacTaoNhan_(ten) {
+  return GmailApp.getUserLabelByName(ten) || GmailApp.createLabel(ten);
+}
+
+function layHoacTaoThuMuc_() {
+  var it = DriveApp.getFoldersByName(CAU_HINH.THU_MUC_DRIVE);
+  return it.hasNext() ? it.next() : DriveApp.createFolder(CAU_HINH.THU_MUC_DRIVE);
+}
+
+function layHoacTaoNhatKy_(thuMuc) {
+  var props = PropertiesService.getScriptProperties();
+  var id = props.getProperty('NHATKY_ID');
+  if (id) {
+    try { return SpreadsheetApp.openById(id).getSheets()[0]; } catch (e) { /* tạo lại bên dưới */ }
+  }
+  var it = thuMuc.getFilesByName(CAU_HINH.TEN_FILE_NHAT_KY);
+  var ss = it.hasNext() ? SpreadsheetApp.openById(it.next().getId())
+                        : SpreadsheetApp.create(CAU_HINH.TEN_FILE_NHAT_KY);
+  if (!it.hasNext()) {
+    var f = DriveApp.getFileById(ss.getId());
+    f.moveTo(thuMuc);
+  }
+  var sheet = ss.getSheets()[0];
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(['Thời gian lưu', 'Email gửi', 'Tiêu đề email', 'Tên file đã lưu', 'Loại', 'Link Drive', 'ID email']);
+    sheet.setFrozenRows(1);
+  }
+  props.setProperty('NHATKY_ID', ss.getId());
+  return sheet;
+}
+
+function docDanhSachDaXuLy_() {
+  var raw = PropertiesService.getScriptProperties().getProperty('DA_XU_LY');
+  try { return raw ? JSON.parse(raw) : {}; } catch (e) { return {}; }
+}
+
+function ghiDanhSachDaXuLy_(map) {
+  PropertiesService.getScriptProperties().setProperty('DA_XU_LY', JSON.stringify(map));
+}
+</script>
+
+<script>
+/* ============ Helpers ============ */
+function parseMoney(v){ if(v==null) return 0; if(typeof v==='number') return v; var s=String(v).replace(/[^\d.,-]/g,''); if(!s) return 0; // VN: 1.552.000 or 1,552,000 -> remove thousand sep; decimal comma case
+ if(/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(s)) s=s.replace(/\./g,'').replace(',','.'); else if(/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) s=s.replace(/,/g,''); else if(s.indexOf(',')>-1 && s.indexOf('.')===-1) s=s.replace(',','.'); else s=s.replace(/,/g,'');
+ var n=parseFloat(s); return isNaN(n)?0:n; }
+function fmt(n){ return (Number(n)||0).toLocaleString('vi-VN'); }
+function fmtInput(el){ var n=parseMoney(el.value); if(el.value.trim()==='') return; el.value = n? fmt(n): el.value; }
+function toISODate(s){ if(!s) return ''; var m=String(s).match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/); if(m) return m[3]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[1]).padStart(2,'0'); if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10); return ''; }
+function toVNDate(iso){ if(!iso) return ''; var p=iso.split('-'); return p.length===3? p[2]+'/'+p[1]+'/'+p[0] : iso; }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+/* ============ State ============ */
+function blankInvoice(fileName){ return {ngay:'',soHD:'',kyHieu:'',maCQT:'',maTraCuu:'',fileNguon:fileName||'',benBan:'',mstBan:'',dcBan:'',stkBan:'',nganHangBan:'',benMua:'',mstMua:'',dcMua:'',hinhThucTT:'',items:[{ten:'',dvt:'',sl:'',donGia:'',thanhTien:'',taxRate:'',taxAmt:''}],congTienHang:'',thueSuat:'',tienThue:'',tongTT:'',bangChu:'',raw:'',preview:null,previewType:'',status:'wait',statusText:'Chờ kiểm tra',fromXML:false,merged:false}; }
+var invoices=[]; var cur=0;
+/* Hóa đơn TRỐNG = không có dòng hàng nào có dữ liệu VÀ tổng thanh toán = 0/rỗng
+   (ví dụ bấm "Nhập tay từ đầu" rồi để đó). Hóa đơn trống bị bỏ qua khi xuất Excel/CSV và không tính vào thống kê. */
+function itemHasData(it){ return !!(it && (String(it.ten||'').trim()!=='' || parseMoney(it.sl) || parseMoney(it.donGia) || parseMoney(it.thanhTien))); }
+function isEmptyInvoice(inv){ if(!inv) return true; var has=false; (inv.items||[]).forEach(function(it){ if(itemHasData(it)) has=true; }); return !has && !parseMoney(inv.tongTT); }
+function exportInvoices(){ return invoices.filter(function(inv){ return !isEmptyInvoice(inv); }); }
+
+/* ============ Render ============ */
+var $=function(s){return document.querySelector(s)};
+function current(){ return invoices[cur]; }
+function renderQueue(){
+ var q=$('#queue'); q.innerHTML='';
+ if(!invoices.length){ var e=document.createElement('div'); e.className='qEmpty'; e.textContent='Chưa có file nào — chọn file ở trên để bắt đầu.'; q.appendChild(e); }
+ invoices.forEach(function(inv,i){ var b=document.createElement('button'); b.type='button'; b.className='qItem'+(i===cur?' active':'');
+  var pillCls= inv.status==='ok'?'ok':(inv.status==='err'?'err':(inv.status==='warn'?'warn':'wait'));
+  b.innerHTML='<div style="font-size:22px">🧾</div><div style="flex:1;min-width:0"><div class="fn">'+esc(inv.fileNguon||('Hóa đơn '+(i+1)))+'</div><div class="fs">Số HĐ: '+esc(inv.soHD||'—')+' • Tổng: '+fmt(parseMoney(inv.tongTT))+'đ'+(inv.merged?' • Đã gộp PDF + XML':(inv.fromXML?' • Từ file XML (dữ liệu gốc)':''))+'</div></div><span class="pill '+pillCls+'">'+esc(inv.statusText)+'</span>';
+  b.onclick=function(){cur=i; syncForm(); renderQueue();}; q.appendChild(b); });
+ var kpiN=0; invoices.forEach(function(x){ if(!isEmptyInvoice(x)) kpiN++; });
+ $('#kpiCount').textContent=kpiN;
+ var items=0,total=0; invoices.forEach(function(x){ x.items.forEach(function(it){ if(itemHasData(it)) items++; }); total+=parseMoney(x.tongTT); });
+ $('#kpiItems').textContent=items; $('#kpiTotal').textContent=fmt(total)+'đ';
+ var noInv=!invoices.length;
+ ['#btnExport','#btnExport2','#btnExportCsv','#btnAddItem','#btnAutoCalc','#btnDeleteInv'].forEach(function(sel){ var b=$(sel); if(b) b.disabled=noInv; });
+}
+function renderItems(){
+ var tb=$('#itemsBody'); tb.innerHTML=''; var inv=current(); if(!inv) return;
+ inv.items.forEach(function(it,idx){
+  var tr=document.createElement('tr');
+  tr.innerHTML='<td style="text-align:center;font-weight:700">'+(idx+1)+'</td>'
+   +'<td><input data-it="ten" value="'+esc(it.ten)+'"></td>'
+   +'<td><input data-it="dvt" value="'+esc(it.dvt)+'"></td>'
+   +'<td><input data-it="sl" inputmode="decimal" value="'+esc(it.sl)+'"></td>'
+   +'<td><input data-it="donGia" inputmode="numeric" value="'+esc(it.donGia?fmt(parseMoney(it.donGia)):it.donGia)+'"></td>'
+   +'<td><input data-it="thanhTien" inputmode="numeric" value="'+esc(it.thanhTien?fmt(parseMoney(it.thanhTien)):it.thanhTien)+'"></td>'
+   +'<td><input data-it="taxRate" placeholder="8%" value="'+esc(it.taxRate||'')+'"></td>'
+   +'<td><button type="button" title="Xóa dòng" style="min-height:44px;min-width:40px;border:1px solid #FECACA;background:#fff;color:#DC2626;border-radius:8px;font-weight:800">✕</button></td>';
+  tr.querySelectorAll('input').forEach(function(inp){ inp.addEventListener('input',function(){ it[inp.dataset.it]=inp.value; validate(); renderQueueLight(); }); inp.addEventListener('blur',function(){ if(inp.dataset.it==='donGia'||inp.dataset.it==='thanhTien'){ inp.value=inp.value.trim()?fmt(parseMoney(inp.value)):''; it[inp.dataset.it]=String(parseMoney(inp.value)||''); } }); });
+  tr.querySelector('button').onclick=function(){ inv.items.splice(idx,1); if(!inv.items.length) inv.items.push({ten:'',dvt:'',sl:'',donGia:'',thanhTien:'',taxRate:'',taxAmt:''}); renderItems(); validate(); renderQueue(); };
+  tb.appendChild(tr);
+ });
+}
+function renderQueueLight(){ /* totals in queue without full re-render loop */ var total=0; invoices.forEach(function(x){total+=parseMoney(x.tongTT)}); $('#kpiTotal').textContent=fmt(total)+'đ'; }
+function syncForm(){
+ var inv=current();
+ if(!inv){
+  document.querySelectorAll('[data-f]').forEach(function(el){ el.value=''; });
+  $('#rawText').value='';
+  $('#mergeTag').style.display='none';
+  $('#xmlTag').style.display='none';
+  var wb0=$('#warnBox'); wb0.className='warnBox'; wb0.innerHTML='';
+  $('#prevName').textContent='Chưa có hóa đơn nào — tải file lên ở Bước 1 để bắt đầu.';
+  $('#previewBox').innerHTML='<div class="previewEmpty">Chưa có ảnh xem trước.<br>Tải file hóa đơn lên ở Bước 1 — ảnh xem trước của file đang chọn sẽ hiện ở đây.</div>';
+  $('#cropPanel').style.display='none';
+  $('#itemsBody').innerHTML='';
+  renderQueue();
+  return;
+ }
+ document.querySelectorAll('[data-f]').forEach(function(el){ var k=el.dataset.f; el.value = (k==='congTienHang'||k==='tienThue'||k==='tongTT') ? (inv[k]?fmt(parseMoney(inv[k])):'') : (inv[k]||''); });
+ $('#rawText').value=inv.raw||'';
+ $('#mergeTag').style.display=inv.merged?'block':'none';
+ $('#xmlTag').style.display=(inv.fromXML&&!inv.merged)?'block':'none';
+ $('#prevName').textContent='Đang xem: '+(inv.fileNguon||'Hóa đơn chưa có tên file');
+ var pb=$('#previewBox');
+ if(inv.preview && inv.previewType==='img'){ pb.innerHTML='<img src="'+inv.preview+'" alt="Ảnh hóa đơn xem trước">'; }
+ else if(inv.preview && inv.previewType==='canvas'){ pb.innerHTML=''; pb.appendChild(inv.preview); }
+ else { pb.innerHTML='<div class="previewEmpty">Hóa đơn này chưa có ảnh xem trước (dữ liệu gõ tay hoặc trích sẵn).<br>Ảnh gốc vẫn nằm trong máy của bạn — tool chỉ hiển thị khi bạn vừa tải file lên trong phiên này.</div>'; }
+ var cp=$('#cropPanel'); if(inv.fullCanvas){ cp.style.display='block'; $('#cropTop').value=inv.cropTop||0; $('#cropBottom').value=inv.cropBottom||0; $('#cropNote').textContent=inv.cropNote||''; } else cp.style.display='none';
+ renderItems(); validate(); renderQueue();
+}
+function validate(){
+ var inv=current(); if(!inv) return true; var warns=[], errs=[];
+ inv.items.forEach(function(it,i){ var sl=parseMoney(it.sl), dg=parseMoney(it.donGia), tt=parseMoney(it.thanhTien); if((sl&&dg&&tt) && Math.abs(sl*dg-tt)>1) errs.push('Dòng '+(i+1)+' “'+(it.ten||'chưa có tên')+'”: Thành tiền '+fmt(tt)+'đ ≠ Số lượng × Đơn giá ('+fmt(sl*dg)+'đ).'); });
+ var cong=parseMoney(inv.congTienHang), thue=parseMoney(inv.tienThue), tong=parseMoney(inv.tongTT);
+ var sumItems=0; inv.items.forEach(function(it){sumItems+=parseMoney(it.thanhTien)});
+ if(cong && sumItems && Math.abs(cong-sumItems)>1) warns.push('Cộng tiền hàng '+fmt(cong)+'đ khác tổng các dòng hàng '+fmt(sumItems)+'đ (lệch '+fmt(Math.abs(cong-sumItems))+'đ).');
+ if(cong && tong && Math.abs(cong+thue-tong)>1) errs.push('Cộng tiền hàng + Tiền thuế = '+fmt(cong+thue)+'đ, nhưng Tổng thanh toán đang là '+fmt(tong)+'đ (lệch '+fmt(Math.abs(cong+thue-tong))+'đ).');
+ var ts=parseFloat(String(inv.thueSuat).replace(',','.'))||0; if(cong&&ts&&thue&&Math.abs(cong*ts/100-thue)>100) warns.push('Tiền thuế '+fmt(thue)+'đ chưa khớp thuế suất '+ts+'% × Cộng tiền hàng (ước tính '+fmt(Math.round(cong*ts/100))+'đ).');
+ if(!inv.soHD) warns.push('Chưa có Số hóa đơn.'); if(!inv.ngay) warns.push('Chưa có Ngày hóa đơn.');
+ var box=$('#warnBox');
+ if(errs.length){ box.className='warnBox show bad'; box.innerHTML='🔴 <b>Cần kiểm tra lại — số chưa khớp:</b><br>'+errs.concat(warns).map(esc).join('<br>'); inv.status='err'; inv.statusText='Số chưa khớp'; }
+ else if(warns.length){ box.className='warnBox show mid'; box.innerHTML='🟡 <b>Gần xong — còn vài chỗ cần xem:</b><br>'+warns.map(esc).join('<br>'); inv.status='warn'; inv.statusText='Cần xem lại'; }
+ else { box.className='warnBox show ok'; box.innerHTML='🟢 <b>Số liệu khớp nhau.</b> Có thể xuất Excel ở Bước 3.'; inv.status='ok'; inv.statusText='Đã khớp số'; }
+ if(inv.merged && !errs.length) inv.statusText='Đã gộp PDF + XML';
+ else if(inv.fromXML && !errs.length && !warns.length) inv.statusText='XML — dữ liệu gốc';
+ return errs.length===0;
+}
+document.querySelectorAll('[data-f]').forEach(function(el){ el.addEventListener('input',function(){ var inv=current(); if(!inv) return; inv[el.dataset.f]=el.value; validate(); renderQueueLight(); }); el.addEventListener('blur',function(){ if(el.classList.contains('money')&&el.value.trim()){ el.value=fmt(parseMoney(el.value)); current()[el.dataset.f]=String(parseMoney(el.value)||''); validate(); } renderQueue(); }); });
+$('#btnAddItem').onclick=function(){ var inv=current(); if(!inv) return; inv.items.push({ten:'',dvt:'',sl:'',donGia:'',thanhTien:'',taxRate:'',taxAmt:''}); renderItems(); };
+$('#btnAutoCalc').onclick=function(){ var inv=current(); if(!inv) return; inv.items.forEach(function(it){ var sl=parseMoney(it.sl),dg=parseMoney(it.donGia); if(sl&&dg) it.thanhTien=String(Math.round(sl*dg)); }); var sum=0; inv.items.forEach(function(it){sum+=parseMoney(it.thanhTien)}); if(sum) inv.congTienHang=String(sum); var ts=parseFloat(String(inv.thueSuat).replace(',','.'))||0; if(sum&&ts) inv.tienThue=String(Math.round(sum*ts/100)); if(parseMoney(inv.congTienHang)) inv.tongTT=String(parseMoney(inv.congTienHang)+parseMoney(inv.tienThue)); syncForm(); };
+var delArm=false; $('#btnDeleteInv').onclick=function(){ var btn=this; if(!delArm){ delArm=true; btn.textContent='⚠️ Bấm lần nữa để xóa thật'; setTimeout(function(){delArm=false; btn.textContent='🗑 Xóa hóa đơn này';},4000); return; } delArm=false; btn.textContent='🗑 Xóa hóa đơn này'; invoices.splice(cur,1); if(cur>=invoices.length) cur=Math.max(0,invoices.length-1); syncForm(); };
+$('#btnManual').onclick=function(){ invoices.push(blankInvoice('Nhập tay — chưa có file')); cur=invoices.length-1; syncForm(); document.getElementById('step2').scrollIntoView({behavior:'smooth'}); };
+$('#rawText').addEventListener('input',function(){ if(current()) current().raw=this.value; });
+$('#btnTop').onclick=function(){ window.scrollTo({top:0,behavior:'smooth'}); };
+$('#btnRecrop').onclick=async function(){ var inv=current(); if(!inv||!inv.fullCanvas) return; var t=parseInt($('#cropTop').value)||0, b=parseInt($('#cropBottom').value)||0; var url=cropByPercent(inv,t,b); if(!url){ setProg(100,'Khoảng cắt quá lớn — hãy giảm bớt 2 thanh trượt rồi thử lại.'); return; } inv.cropTop=t; inv.cropBottom=b; inv.preview=url; inv.cropNote='Đã cắt theo chỉnh tay: bỏ '+t+'% ở trên, '+b+'% ở dưới.'; var fresh=blankInvoice(inv.fileNguon); fresh.fileNguon=inv.fileNguon; await ocrImage(url,fresh); ['ngay','soHD','kyHieu','maCQT','maTraCuu','benBan','mstBan','dcBan','stkBan','nganHangBan','benMua','mstMua','dcMua','hinhThucTT','congTienHang','thueSuat','tienThue','tongTT','bangChu','raw'].forEach(function(k){ if(fresh[k]) inv[k]=fresh[k]; }); if(fresh.items&&fresh.items.length&&fresh.items[0].ten) inv.items=fresh.items; setProg(100,'Đã đọc lại sau khi cắt. Kiểm tra số ở Bước 2 nhé.'); syncForm(); };
+$('#btnFullImg').onclick=async function(){ var inv=current(); if(!inv||!inv.fullUrl) return; inv.cropTop=0; inv.cropBottom=0; inv.preview=inv.fullUrl; inv.cropNote='Đang dùng ảnh gốc toàn khung.'; var fresh=blankInvoice(inv.fileNguon); await ocrImage(inv.fullUrl,fresh); ['ngay','soHD','kyHieu','maCQT','maTraCuu','benBan','mstBan','dcBan','stkBan','nganHangBan','benMua','mstMua','dcMua','hinhThucTT','congTienHang','thueSuat','tienThue','tongTT','bangChu','raw'].forEach(function(k){ if(fresh[k]) inv[k]=fresh[k]; }); if(fresh.items&&fresh.items.length&&fresh.items[0].ten) inv.items=fresh.items; setProg(100,'Đã đọc lại trên ảnh gốc. Kiểm tra số ở Bước 2 nhé.'); syncForm(); };
+
+/* ============ Parsing OCR / PDF text ============ */
+function grab(text, patterns){ for(var i=0;i<patterns.length;i++){ var m=text.match(patterns[i]); if(m) return (m[1]||'').trim(); } return ''; }
+/* ---- Chuẩn hóa trước khi bắt số: một số PDF xuất MST/STK dạng mỗi chữ số cách nhau 1 khoảng trắng ---- */
+function normalizeDigits(t){ var s=String(t||'').replace(/\d(?: \d){5,}/g,function(m){ return m.replace(/ /g,''); }); s=s.replace(/(\d{10})\s*-\s*(\d)\s+(\d)\s+(\d)\b/g,'$1-$2$3$4'); return s; } /* hậu tố chi nhánh MST dạng "3700147620 - 0 1 3" (3 số cuối cũng bị cách chữ) -> "3700147620-013" */
+/* Nhãn đã biết: giá trị của 1 trường phải DỪNG ở nhãn kế tiếp, không nuốt sang trường sau */
+var CUT_LABELS=['Mã số thuế','MST/CCCD','MSĐVCQHVNS','MST','Địa chỉ','Điện thoại','Email','Số tài khoản','Họ tên người mua hàng','Họ và tên người mua hàng','Tên đơn vị','Tên người mua','Đơn vị bán hàng','Hình thức thanh toán','Cộng tiền hàng','Tổng tiền hàng','Tổng tiền thanh toán','Tổng cộng tiền thanh toán','Tiền thuế GTGT','Tiền thuế','Thuế suất','Người mua hàng','Người bán hàng','Signature','Tra cứu','Mã tra cứu','Mã số tra cứu','Phát hành bởi','Mã CQT','Mã của cơ quan thuế','Mã cơ quan thuế','Ký hiệu','CCCD','Căn cước công dân','Số hộ chiếu','Ngày ký','Ký ngày','STT','Số VT','Số xe','Đơn đặt hàng số','Ngày đáo hạn','Kỳ hạn','Đồng tiền thanh toán','Tỷ giá','Mẫu số','HÓA ĐƠN','GIÁ TRỊ GIA TĂNG','Ngày'];
+function cutAtLabel(v){
+ if(!v) return '';
+ var cut=v.length;
+ for(var i=0;i<CUT_LABELS.length;i++){
+  var lab=CUT_LABELS[i].replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  var m=new RegExp('[\\s:;|/]+'+lab+'(?=[\\s:;|/(\\)]|$)','i').exec(v);
+  if(m&&m.index<cut) cut=m.index;
+ }
+ return v.slice(0,cut).replace(/\s+/g,' ').trim();
+}
+function cleanVal(v){ return String(v||'').replace(/\s+/g,' ').replace(/[\s.,;:]+$/,'').trim(); }
+/* ---- Bắt dòng hàng: đơn vị tính + cụm số ở cuối, kiểm chứng Số lượng × Đơn giá ≈ Thành tiền ---- */
+var UNIT_LIST=['cái','kg','tấm','hộp','chai','lon','gói','bộ','chiếc','lít','thùng','cuộn','túi','can','bình','quyển','cây','đôi','set','pcs','khay','vỉ','lọ','bịch','thanh','sợi','cuốn','vắt','lốc','m','g','ml','l'];
+function isNumTok(tok){ var s=String(tok||'').replace(/[.,;]+$/,''); return /^\d{1,3}(?:\.\d{3})+(?:,\d+)?$/.test(s)||/^\d+,\d+$/.test(s)||/^\d+$/.test(s); }
+function cleanItemName(name){
+ var v=String(name||'').replace(/\s+/g,' ').trim();
+ v=v.replace(/\|/g,' '); /* ký tự phân cách cột "|" do PDF dạng bảng tách ra — không bao giờ thuộc tên hàng */
+ v=v.replace(/\(\s+/g,'(').replace(/\s+\)/g,')'); /* "( số 16...)" -> "(số 16...)" — dấu ngoặc dính chữ do PDF tách ký tự */
+ if(v.indexOf('...')>=0) v=v.split('...').pop().trim();
+ v=v.replace(/\[[^\]]*\]/g,' ').replace(/\s+/g,' ').trim();
+ var labs=['Hình thức thanh toán','Mã số thuế','MST/CCCD','MST','Tên đơn vị','Địa chỉ','Số tài khoản','Đơn vị bán hàng','Cộng tiền hàng','Tổng tiền thanh toán','Mã CQT','Ký hiệu','Số tiền viết bằng chữ'];
+ for(var i=0;i<labs.length;i++){ var idx=v.lastIndexOf(labs[i]); if(idx>=0){ var rest=v.slice(idx+labs[i].length); var c=rest.indexOf(':'); if(c>=0&&c<30) v=rest.slice(c+1).trim(); } }
+ /* ---- Làm sạch TRIỆT ĐỂ mảnh TIÊU ĐỀ BẢNG song ngữ lẫn vào tên hàng (đầu / giữa / cuối) ----
+    Chỉ xóa đúng các cụm tiêu đề đã biết, nguyên cụm hoặc mảnh vỡ; TUYỆT ĐỐI không xóa ngoặc
+    thật của tên hàng như "(Led)", "(E27, 4W, ...)", "(042398000)" — các cụm đó không nằm
+    trong danh sách dưới đây và không bắt đầu bằng từ khóa tiêu đề. Hàm này được cả 2 đường
+    bắt hàng dùng chung: parseItems (theo dòng) và parseItemsFallback (zip theo cột). */
+ /* 1) Dòng công thức cột nguyên dãy: "1 2 3 4 5 6=4x5 7 8=6x7 9=6-8" và "(1) (2) (3) (4) (5) (6) = (4) x (5)" */
+ v=v.replace(/\(1\)\s*\(2\)\s*\(3\)\s*\(4\)\s*\(5\)\s*\(6\)\s*=\s*\(4\)\s*[x×]\s*\(5\)/gi,' ');
+ v=v.replace(/\b1\s+2\s+3\s+4\s+5\s+6\s*=\s*4\s*[x×]\s*5\s+7\s+8\s*=\s*6\s*[x×]\s*7\s+9\s*=\s*6\s*-\s*8\b/g,' ');
+ v=v.replace(/\(\d\)\s*=\s*\(\d\)\s*[x×]\s*\(\d\)/g,' ');
+ v=v.replace(/\b\d+\s*=\s*\d+\s*[x×\-]\s*\d+\b/g,' ');
+ v=v.replace(/\(\d\)/g,' '); /* số cột đơn độc kiểu (1) (2) — ngoặc nhiều chữ số như (042398000) không khớp mẫu 1 chữ số này */
+ /* 2) Cụm ngoặc tiếng Anh của tiêu đề: "(Name ...)", "(Unit ...)", "(Quantity)", "(Amount)",
+       "(Discount ...)", "(Total amount ...)", "(Description)", "(No.)", "(No)" — chỉ khi ngoặc
+       BẮT ĐẦU bằng đúng từ khóa tiêu đề đó; "(Led)" / "(E27,..." không bắt đầu bằng chúng nên còn nguyên */
+ v=v.replace(/\(\s*(?:name|unit|quantity|amount|discount|total|description|no\b)[^)]*\)/gi,' ');
+ /* 3) Các cụm / mảnh vỡ còn lại, xếp dài trước ngắn sau, xóa ở mọi vị trí trong tên */
+ var hdr=['Thành suất','Thành tiền trước thuế GTGT','Thành tiền trước thuế','Tên hàng hóa, dịch vụ','Tên hàng hoá, dịch vụ','Tên hàng hóa dịch vụ','Tên hàng hoá dịch vụ','Name of goods and services','Name of goods and','Name of goods','goods and services)','Tỷ lệ chiết khấu','Tiền chiết khấu','Đơn vị tính','Đon vị tính','Số lượng','Đơn giá','Thành tiền','Thuế suất','Tiền thuế','Đơn vị','Đon vị','(Total amount','(Discount amount','(Discount rate','(Discount','(Unit price','(Quantity','(Description','(Amount','(Unit','(Name','(No.)','(No)','services)','price)','rate)','amount)','excluding VAT)','excl. VAT)'];
+ v=v.replace(/\bSTT\b/g,' '); /* STT đứng riêng mới là tiêu đề; "STTT" trong tên hàng (sữa STTT) phải giữ nguyên */
+ for(var h=0;h<hdr.length;h++){ var hp=hdr[h].replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); v=v.replace(new RegExp(hp,'gi'),' '); }
+ v=v.replace(/\(\s*\)/g,' '); /* ngoặc rỗng còn sót sau khi xóa cụm bên trong */
+ v=v.replace(/\s+/g,' ').trim();
+ v=v.replace(/^(STT|Tên hàng hóa, dịch vụ|Tên hàng hoá, dịch vụ)\b\s*/i,'');
+ var toks=v.split(' ').filter(function(tk){ return tk!=='('&&tk!==')'; });
+ while(toks.length>1&&/^[^A-Za-z0-9À-ỹ]+$/.test(toks[0])) toks.shift(); /* bỏ token dấu câu đứng đầu (ví dụ "|" do cột bảng tách) */
+ /* Mã hàng hóa đứng ngay sau STT (mẫu CPV/VNPT: "1 2300CC220115 ức Phi Lê...") không thuộc tên hàng */
+ if(toks.length>2&&/^\d{1,3}$/.test(toks[0])&&/^[A-Za-z0-9]{8,}$/.test(toks[1])&&/\d/.test(toks[1])&&/[A-Za-z]/.test(toks[1])) toks.splice(0,2);
+ else if(toks.length>1&&/^[A-Za-z0-9]{8,}$/.test(toks[0])&&/\d/.test(toks[0])&&/[A-Za-z]/.test(toks[0])) toks.shift();
+ if(toks.length>1&&/^\d{1,3}$/.test(toks[0])&&!/^\d/.test(toks[1])) toks.shift();
+ return toks.join(' ').replace(/^[:.,;\-–\s]+/,'').replace(/\s+/g,' ').trim();
+}
+/* Quét dãy token SAU đơn vị tính: số (SL, trọng lượng?, đơn giá, thành tiền) có thể chen 1 token
+   thuế suất (8% / KKKNT / KCT) ở giữa hoặc đứng ngay sau thành tiền, kèm tiền thuế theo dòng.
+   Thử mọi cặp (SL, Đơn giá) liên tiếp sau đó: chọn cặp thỏa SL × Đơn giá ≈ Thành tiền —
+   nhờ vậy cột Trọng lượng chen giữa (CPV: 6 | 30 | 305.000 | 1.830.000) không bị nhận nhầm làm SL. */
+function itemFromTokens(toks, u){
+ var seq=[];
+ for(var n=u+1;n<toks.length&&seq.length<10;n++){
+  var raw=toks[n], t2=raw.replace(/[.,;]+$/,'');
+  if(isNumTok(t2)) seq.push({t:'n',v:t2});
+  else if(/^(KKKNT|KCT)$/i.test(t2)) seq.push({t:'r',v:t2.toUpperCase()});
+  else if(/^\d{1,2}(?:[.,]\d+)?%$/.test(raw.replace(/[,;]+$/,''))) seq.push({t:'r',v:raw.replace(/[,;]+$/,'')});
+  else break;
+ }
+ var nums=[]; seq.forEach(function(s){ if(s.t==='n') nums.push(s.v); });
+ if(nums.length<3) return null;
+ for(var a=0;a+2<nums.length&&a<3;a++){
+  for(var b=a+1;b+1<nums.length;b++){
+   var sl=parseMoney(nums[a]), dg=parseMoney(nums[b]), tt=parseMoney(nums[b+1]);
+   if(!(sl>0&&dg>0&&tt>0)) continue;
+   if(Math.abs(sl*dg-tt)>Math.max(2,tt*0.01)) continue;
+   /* vị trí của thành tiền trong seq để biết thuế suất / tiền thuế nằm trước hay sau nó */
+   var seen=-1, ttPos=-1, rate='', taxAmt='';
+   for(var s2=0;s2<seq.length;s2++){ if(seq[s2].t==='n'){ seen++; if(seen===b+1){ ttPos=s2; break; } } }
+   for(var r2=0;r2<seq.length;r2++){ if(seq[r2].t==='r'){ rate=seq[r2].v; if(r2>ttPos&&seq[r2+1]&&seq[r2+1].t==='n') taxAmt=String(parseMoney(seq[r2+1].v)); break; } }
+   return {dvt:toks[u].replace(/[.,;:]+$/,''), sl:String(sl), donGia:String(dg), thanhTien:String(tt), taxRate:rate, taxAmt:taxAmt, end:u+seq.length};
+  }
+ }
+ return null;
+}
+function tryItemLine(ln){
+ var toks=ln.split(/\s+/).filter(Boolean);
+ for(var u=0;u<toks.length;u++){
+  var tk=toks[u].replace(/^[(*]+|[).,;:]+$/g,'').toLowerCase();
+  if(UNIT_LIST.indexOf(tk)<0) continue;
+  var r=itemFromTokens(toks,u);
+  if(r){ var name=toks.slice(0,u).join(' '); if(/^[\d\s.]+$/.test(name)) name=''; r.ten=name; return r; }
+ }
+ return null;
+}
+/* Dòng hàng THIẾU thành tiền (thành tiền nằm ở dòng riêng ngay sau — mẫu Phương Anh):
+   chỉ cần đơn vị + SL + đơn giá; thành tiền được ghép sau bằng số mồ côi khớp phép nhân. */
+function tryLooseLine(ln){
+ var toks=ln.split(/\s+/).filter(Boolean);
+ for(var u=0;u<toks.length;u++){
+  var tk=toks[u].replace(/^[(*]+|[).,;:]+$/g,'').toLowerCase();
+  if(UNIT_LIST.indexOf(tk)<0) continue;
+  var nums=[];
+  for(var n=u+1;n<toks.length;n++){ var t2=toks[n].replace(/[.,;]+$/,''); if(isNumTok(t2)) nums.push(t2); else break; }
+  if(nums.length===2){ var name=toks.slice(0,u).join(' '); if(/^[\d\s.]+$/.test(name)) name='';
+   return {ten:name, dvt:toks[u].replace(/[.,;:]+$/,''), sl:String(parseMoney(nums[0])), donGia:String(parseMoney(nums[1])), thanhTien:'', taxRate:'', taxAmt:''}; }
+ }
+ return null;
+}
+function isJunkLine(ln){
+ if(/^[\d\s.,;:]+$/.test(ln)) return true;
+ if(/^[\d\s=+\-x×().,]+$/.test(ln)) return true; /* dòng chỉ số cột / công thức kiểu (1) (2) 6=4x5 */
+ if((ln.match(/[()]/g)||[]).length>=3 && !/\d/.test(ln) && !/[à-ỹÀ-Ỹ]/.test(ln)) return true; /* mảnh tiêu đề song ngữ vỡ dòng, kiểu "services) (Unit) price)" */
+ if(/^(suất|tính|sau thuế|thuế gtgt|tổng tiền|thành tiền|tiền thuế|thanh toán)$/i.test(ln)) return true; /* mảnh tiêu đề bảng vỡ dòng đứng riêng 1 dòng */
+ if(/(GTGT|VAT rate|VAT amount)/i.test(ln) && !/\d{2}/.test(ln)) return true; /* mảnh tiêu đề kiểu "GTGT % GTGT" */
+ return /HÓA ĐƠN|Mã số thuế|MST|Địa chỉ|Điện thoại|Email|Số tài khoản|Hình thức thanh toán|Người mua hàng|Người bán hàng|Signature|Tra cứu|Phát hành|Số tiền viết|Cộng tiền|Tổng tiền|Tổng cộng|Thuế suất|Tiền thuế|Ký hiệu|Mã CQT|Mã tra cứu|Họ tên|Tên đơn vị|Đơn vị bán hàng|STT|Tên hàng|Đơn vị tính|Số lượng|Đơn giá|Thành tiền|Tỷ lệ chiết|Tiền chiết|Không kê khai|Không chịu thuế|Name of goods|Description|Quantity|Unit price|Amount|Discount|excluding|\(\d\)/i.test(ln);
+}
+function parseItems(lines, tf){
+ var start=-1,end=lines.length,i,j;
+ for(i=0;i<lines.length;i++){ if(/Tên hàng hóa|Tên hàng hoá/i.test(lines[i])){ start=i; break; } }
+ if(start>=0){ for(j=start+1;j<lines.length;j++){ if(/Cộng tiền hàng|Tổng tiền hàng|Tổng cộng|Tiền hàng hóa, dịch vụ/i.test(lines[j])){ end=j; break; } } }
+ var lo=start>=0?start+1:0, hi=start>=0?end:lines.length;
+ var itemLines=[], frags=[], loose=[], orphans=[], k;
+ for(k=lo;k<hi;k++){
+  var it=tryItemLine(lines[k]);
+  if(it) itemLines.push({idx:k,it:it});
+  else if(/^\d{1,3}(?:\.\d{3})+(?:,\d+)?$/.test(lines[k])||/^\d{4,}$/.test(lines[k])) orphans.push({idx:k,val:parseMoney(lines[k])}); /* số tiền đứng 1 mình 1 dòng: ứng viên thành tiền mồ côi */
+  else { var li=tryLooseLine(lines[k]); if(li) loose.push({idx:k,it:li}); else if(!isJunkLine(lines[k])) frags.push({idx:k,text:lines[k]}); }
+ }
+ /* Ghép dòng hàng thiếu thành tiền với số mồ côi ở dòng kề, kiểm chứng bằng phép nhân */
+ loose.forEach(function(rec){
+  for(var o=0;o<orphans.length;o++){ var orp=orphans[o]; if(Math.abs(rec.idx-orp.idx)>3) continue;
+   var prod=parseMoney(rec.it.sl)*parseMoney(rec.it.donGia);
+   if(prod>0&&Math.abs(prod-orp.val)<=Math.max(2,orp.val*0.01)){ rec.it.thanhTien=String(orp.val); orphans.splice(o,1); break; } }
+  if(rec.it.thanhTien) itemLines.push(rec);
+ });
+ itemLines.sort(function(a,b){ return a.idx-b.idx; });
+ if(!itemLines.length) return parseItemsFallback(tf);
+ itemLines.forEach(function(rec){ rec.parts=rec.it.ten?[{idx:rec.idx,text:rec.it.ten}]:[]; });
+ frags.forEach(function(f){
+  var best=null,bd=1e9;
+  itemLines.forEach(function(rec){ var d=Math.abs(rec.idx-f.idx); if(d<bd||(d===bd&&best&&rec.idx<best.idx)){ bd=d; best=rec; } });
+  if(best) best.parts.push({idx:f.idx,text:f.text});
+ });
+ var out=[];
+ itemLines.forEach(function(rec){ rec.parts.sort(function(a,b){return a.idx-b.idx;}); rec.it.ten=cleanItemName(rec.parts.map(function(p){return p.text;}).join(' ')); out.push(rec.it); });
+ return out.slice(0,40);
+}
+/* Dự phòng khi text bị xáo thứ tự (PDF dạng bảng): quét luồng token, zip tên + đơn vị + cụm số theo thứ tự */
+function parseItemsFallback(tf){
+ var toks=String(tf||'').split(/\s+/).filter(Boolean); var out=[];
+ for(var u=0;u<toks.length;u++){
+  var tk=toks[u].replace(/^[(*]+|[).,;:]+$/g,'').toLowerCase();
+  if(UNIT_LIST.indexOf(tk)<0) continue;
+  var r=itemFromTokens(toks,u);
+  if(!r) continue;
+  r.ten=cleanItemName(toks.slice(Math.max(0,u-16),u).join(' '));
+  out.push(r);
+  u=r.end-1;
+ }
+ return out.slice(0,40);
+}
+function parseInvoiceText(text, inv){
+ var raw=String(text||'').replace(/\r/g,'');
+ if(raw.normalize) raw=raw.normalize('NFC'); /* một số PDF xuất chữ tiếng Việt dạng tổ hợp rời (NFD) — chuẩn hóa để hiển thị & khớp nhãn đúng */
+ inv.raw=raw;
+ var t=normalizeDigits(raw);
+ var tf=t.replace(/\s*\n\s*/g,' ');
+ var lines=t.split('\n').map(function(x){return x.replace(/\|/g,' ').replace(/\s+/g,' ').trim();}).filter(Boolean);
+ function G(pats){ for(var i=0;i<pats.length;i++){ var m=tf.match(pats[i]); if(m) return (m[1]||'').trim(); } return ''; }
+ /* Nhãn song ngữ: cho phép 1–3 cụm "(...)" chen giữa nhãn và dấu ":" */
+ var so=G([/Số hóa đơn(?:\s*\([^)]*\)){0,2}\s*:\s*(\d{3,8})/i,/Số(?:\s*\([^)]*\)){0,2}\s*:\s*(\d{3,8})\b/i]); if(so) inv.soHD=so;
+ var kh=G([/Ký hiệu(?:\s*\([^)]*\)){0,2}\s*:\s*([0-9A-Z]{5,10})/i]);
+ if(!kh){ var sk=tf.match(/\b[12]C\d{2}T[A-Z0-9]{2,3}\b/); if(sk) kh=sk[0]; } /* nhãn "Mẫu số - Ký hiệu:" bị tách cột khỏi giá trị: tìm ký hiệu theo đúng định dạng 1C26Txx trong toàn văn bản */
+ if(kh) inv.kyHieu=kh;
+ var dm=tf.match(/Ngày(?:\s*\([^)]*\))?\s*:?\s*(\d{1,2})\s+tháng(?:\s*\([^)]*\))?\s*:?\s*(\d{1,2})\s+năm(?:\s*\([^)]*\))?\s*:?\s*(\d{4})/i);
+ if(dm) inv.ngay=String(dm[1]).padStart(2,'0')+'/'+String(dm[2]).padStart(2,'0')+'/'+dm[3];
+ else { var d2=tf.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/); if(d2) inv.ngay=String(d2[1]).padStart(2,'0')+'/'+String(d2[2]).padStart(2,'0')+'/'+d2[3];
+  else { var d3=tf.match(/(\d{4})-(\d{2})-(\d{2})T\d{2}:\d{2}/); if(d3) inv.ngay=d3[3]+'/'+d3[2]+'/'+d3[1]; } } /* ngày bị tách mảnh: đối chiếu chuỗi ký số dạng ISO */
+ var mcq=G([/Mã CQT(?:\s*\([^)]*\)){0,2}\s*:\s*([A-Z0-9][A-Z0-9-]{9,})/i,/Mã của cơ quan thuế(?:\s*\([^)]*\)){0,2}\s*:\s*([A-Z0-9][A-Z0-9-]{9,})/i,/Mã cơ quan thuế\s*:\s*([A-Z0-9][A-Z0-9-]{9,})/i]);
+ if(!mcq){ var hx=tf.match(/\b[0-9A-F]{32,36}\b/); if(hx) mcq=hx[0]; } /* Mã CQT hay nằm ở cuối hóa đơn / tách ô riêng: quét toàn văn bản tìm chuỗi hex 32–36 ký tự */
+ if(mcq) inv.maCQT=mcq;
+ var mtc=G([/Mã (?:số )?tra cứu[^:\n]{0,25}:\s*([0-9A-Za-z_.-]{6,})/i,/Mã giao dịch(?:\s*\([^)]*\)){0,2}\s*:\s*([0-9A-Za-z_.-]{6,})/i]); if(mtc) inv.maTraCuu=mtc.replace(/\.+$/,'');
+ /* MST bắt theo nhãn, theo thứ tự xuất hiện (bán trước, mua sau) — số điện thoại không có nhãn MST nên không bị bắt nhầm */
+ var mstList=[], reMST=/(?:Mã số thuế|MST\/CCCD(?:\s+chủ hộ)?|MST)(?:\s*(?:\([^)]*\)|\/[^:\n]{1,40})){0,2}\s*:\s*(\d{10})(?:\s*-\s*(\d{3}))?/gi, mm;
+ while((mm=reMST.exec(tf))){ var val=mm[1]+(mm[2]?('-'+mm[2]):''); if(mm[1]!=='0101243150'&&mstList.indexOf(val)<0) mstList.push(val); }
+ if(mstList[0]) inv.mstBan=mstList[0]; if(mstList[1]) inv.mstMua=mstList[1];
+ if(!mstList.length){ var all=tf.match(/\b\d{10}(?:-\d{3})?\b/g)||[]; all=all.filter(function(x){return x!=='0101243150'}); if(all[0]&&!inv.mstBan) inv.mstBan=all[0]; if(all[1]&&!inv.mstMua) inv.mstMua=all[1]; }
+ /* Bên bán: ưu tiên nhãn "Đơn vị bán hàng"; nếu không có, lấy tên công ty cuối cùng trước nhãn MST đầu tiên */
+ var seller='', sLbl=/Đơn vị bán hàng(?:\s*\([^)]*\)){0,2}\s*:\s*/i.exec(tf);
+ if(sLbl) seller=cleanVal(cutAtLabel(tf.slice(sLbl.index+sLbl[0].length, sLbl.index+sLbl[0].length+130)));
+ if(!seller){
+  var firstMST=tf.search(/(?:Mã số thuế|MST\/CCCD|MST)(?:\s*(?:\([^)]*\)|\/[^:\n]{1,40})){0,2}\s*:\s*\d{10}/i);
+  var head=firstMST>0?tf.slice(0,firstMST):tf.slice(0,800);
+  var cre=/(CHI NHÁNH CÔNG TY|CÔNG TY TNHH|CÔNG TY CỔ PHẦN|CÔNG TY|DOANH NGHIỆP TƯ NHÂN|DOANH NGHIỆP|HỘ KINH DOANH|HỢP TÁC XÃ|TRUNG TÂM|CỬA HÀNG)/gi, cm, lastIdx=-1;
+  while((cm=cre.exec(head))){ lastIdx=cm.index; }
+  if(lastIdx>=0) seller=cleanVal(cutAtLabel(head.slice(lastIdx,lastIdx+130)));
+ }
+ if(seller) inv.benBan=seller;
+ /* Bên mua */
+ var bLbl=/Tên đơn vị(?:\s*\([^)]*\)){0,2}\s*:\s*/i.exec(tf)||/Tên mua hàng(?:\s*\([^)]*\)){0,2}\s*:\s*/i.exec(tf)||/Tên người mua(?! hàng)(?:\s*\([^)]*\)){0,2}\s*:\s*/i.exec(tf);
+ if(bLbl){ var buyer=cleanVal(cutAtLabel(tf.slice(bLbl.index+bLbl[0].length, bLbl.index+bLbl[0].length+130))); if(buyer) inv.benMua=buyer; }
+ /* Địa chỉ: lần lượt bên bán rồi bên mua */
+ var addrRe=/Địa chỉ(?:\s*\([^)]*\)){0,2}\s*:\s*/gi, am, addrs=[];
+ while((am=addrRe.exec(tf))){ var av=cleanVal(cutAtLabel(tf.slice(am.index+am[0].length, am.index+am[0].length+180))); if(av) addrs.push(av); }
+ if(addrs[0]) inv.dcBan=addrs[0]; if(addrs[1]) inv.dcMua=addrs[1];
+ /* STK + ngân hàng cùng dòng ("- Ngân hàng ... - CN ...") */
+ var stkM=/Số tài khoản(?:\s*(?:\([^)]*\)|\/[^:\n]{1,30})){0,2}\s*:\s*(\d{8,20})/i.exec(tf);
+ if(stkM){ inv.stkBan=stkM[1];
+  var after=tf.slice(stkM.index+stkM[0].length, stkM.index+stkM[0].length+150);
+  var bk=/Ngân\s*[Hh]àng\s+[^|]{3,90}/.exec(after);
+  if(bk){ var bv=cutAtLabel(bk[0]).replace(/(\S)\s*-\s*CN\b/g,'$1 - CN'); bv=bv.split(/\s+(?:HÓA ĐƠN|GIÁ TRỊ GIA TĂNG|Ký hiệu|Ngày)\b/i)[0]; inv.nganHangBan=cleanVal(bv); }
+ }
+ /* Hình thức thanh toán */
+ var ht=/Hình thức thanh toán(?:\s*\([^)]*\)){0,2}\s*:\s*/i.exec(tf);
+ if(ht){ var hv=cutAtLabel(tf.slice(ht.index+ht[0].length, ht.index+ht[0].length+110).split('[')[0]).split('...')[0].replace(/\[[^\]]*\]/g,' '); hv=cleanVal(hv); if(hv) inv.hinhThucTT=hv.slice(0,40); }
+ /* Số tiền bằng chữ: chỉ lấy đúng 1 câu, dừng ở nhãn kế tiếp */
+ var bc=/Số tiền viết bằng chữ(?:\s*\([^)]*\)){0,2}\s*:\s*/i.exec(tf)||/Bằng chữ(?:\s*\([^)]*\)){0,2}\s*:\s*/i.exec(tf);
+ if(bc){ var bv2=cutAtLabel(tf.slice(bc.index+bc[0].length, bc.index+bc[0].length+240)); var sent=bv2.match(/^[^.]*\./); inv.bangChu=(sent?sent[0]:bv2).replace(/\s+/g,' ').trim(); }
+ /* Tiền hàng / thuế / tổng / thuế suất — số thập phân dấu phẩy kiểu VN do parseMoney xử lý */
+ /* Bảng TỔNG HỢP THEO THUẾ SUẤT (mẫu Bkav): không có dòng tổng kiểu thường, tổng nằm ở dòng
+    "Tổng cộng: <tiền hàng> <chiết khấu> <tiền thuế> <tổng thanh toán>" — đọc TRƯỚC các mẫu thường
+    để mẫu "Tổng cộng:" không giành mất số đầu tiên của dòng này */
+ var sm=tf.match(/Tổng cộng\s*:\s*([\d.]+(?:,\d+)?)\s+([\d.]+(?:,\d+)?)\s+([\d.]+(?:,\d+)?)\s+([\d.]+(?:,\d+)?)/i);
+ if(sm){ inv.congTienHang=String(parseMoney(sm[1])); inv.tienThue=String(parseMoney(sm[3])); inv.tongTT=String(parseMoney(sm[4])); }
+ var cong=G([/Cộng tiền hàng(?:\s*\([^)]*\)){0,3}\s*:\s*([\d.]+(?:,\d+)?)/i,/Tổng tiền hàng(?:\s*\([^)]*\)){0,3}\s*:\s*([\d.]+(?:,\d+)?)/i]); if(cong&&!parseMoney(inv.congTienHang)) inv.congTienHang=String(parseMoney(cong));
+ var thue=G([/Tiền thuế GTGT(?:\s*\([^)]*\)){0,2}\s*:\s*([\d.]+(?:,\d+)?)/i,/Tiền thuế(?:\s*\([^)]*\)){0,2}\s*:\s*([\d.]+(?:,\d+)?)/i]); if(thue&&!parseMoney(inv.tienThue)) inv.tienThue=String(parseMoney(thue));
+ var tong=G([/Tổng (?:cộng )?tiền thanh toán(?:\s*\([^)]*\)){0,2}\s*:\s*([\d.]+(?:,\d+)?)/i,/Tổng cộng(?:\s*\([^)]*\)){0,2}\s*:\s*([\d.]+(?:,\d+)?)/i]); if(tong&&!parseMoney(inv.tongTT)) inv.tongTT=String(parseMoney(tong));
+ var ts=G([/Thuế suất(?:\s+GTGT)?(?:\s*\([^)]*\)){0,2}\s*:?\s*(\d{1,2}(?:[.,]\d+)?)\s*%/i]); if(ts) inv.thueSuat=ts;
+ /* Dòng hàng chi tiết */
+ var items=parseItems(lines, tf);
+ if(items.length) inv.items=items;
+ /* Thuế suất theo từng dòng (hóa đơn nhiều mức thuế): cấp hóa đơn ghi gộp các mức phân biệt,
+    ví dụ "KKKNT + 8%"; 1 mức đặc biệt (KKKNT/KCT) thì mức đó là thuế suất của cả hóa đơn */
+ var rates=[]; inv.items.forEach(function(it){ if(it.taxRate&&rates.indexOf(it.taxRate)<0) rates.push(it.taxRate); });
+ if(rates.length>=2) inv.thueSuat=rates.join(' + ');
+ else if(rates.length===1&&!/^\d/.test(rates[0])) inv.thueSuat=rates[0];
+ else if(rates.length===1&&!inv.thueSuat) inv.thueSuat=rates[0].replace('%','');
+ /* Suy ra số còn thiếu từ các số đã có */
+ var sumI=0; inv.items.forEach(function(it){ sumI+=parseMoney(it.thanhTien); });
+ if(!parseMoney(inv.congTienHang)&&sumI) inv.congTienHang=String(sumI);
+ if(!parseMoney(inv.tienThue)&&parseMoney(inv.tongTT)&&parseMoney(inv.congTienHang)) inv.tienThue=String(parseMoney(inv.tongTT)-parseMoney(inv.congTienHang));
+ if(!parseMoney(inv.tongTT)&&parseMoney(inv.congTienHang)) inv.tongTT=String(parseMoney(inv.congTienHang)+parseMoney(inv.tienThue));
+ return inv;
+}
+
+/* ============ XML hóa đơn điện tử (chuẩn VN: MISA meInvoice & tương tự) ============ */
+function xmlFind(parent,name){ if(!parent) return null; var els=parent.getElementsByTagName('*'); var ln=name.toLowerCase(); for(var i=0;i<els.length;i++){ var tag=(els[i].localName||els[i].tagName||'').toLowerCase(); if(tag===ln) return els[i]; } return null; }
+function xmlFindAll(parent,name){ var out=[]; if(!parent) return out; var els=parent.getElementsByTagName('*'); var ln=name.toLowerCase(); for(var i=0;i<els.length;i++){ var tag=(els[i].localName||els[i].tagName||'').toLowerCase(); if(tag===ln) out.push(els[i]); } return out; }
+function xmlText(parent,name){ var e=xmlFind(parent,name); return e? String(e.textContent||'').trim():''; }
+function parseXmlInvoice(text, inv){
+ var doc; try{ doc=new DOMParser().parseFromString(text,'text/xml'); }catch(e){ return false; }
+ if(!doc||!doc.documentElement) return false;
+ if(doc.getElementsByTagName('parsererror').length) return false;
+ var root=doc.documentElement;
+ var tt=xmlFind(root,'TTChung');
+ var soHD=xmlText(tt,'SHDon')||xmlText(root,'SHDon');
+ if(!soHD) return false; // không đúng chuẩn hóa đơn điện tử VN — để người dùng nhập tay
+ inv.soHD=soHD;
+ inv.kyHieu=xmlText(tt,'KHHDon')||inv.kyHieu;
+ var nlap=xmlText(tt,'NLap'); if(nlap){ inv.ngay=toVNDate(toISODate(nlap))||nlap; }
+ inv.maCQT=xmlText(tt,'MCCQT')||xmlText(root,'MCCQT')||inv.maCQT;
+ inv.hinhThucTT=xmlText(tt,'HTTToan')||inv.hinhThucTT;
+ var nb=xmlFind(root,'NBan');
+ if(nb){ inv.benBan=xmlText(nb,'Ten')||inv.benBan; inv.mstBan=xmlText(nb,'MST')||inv.mstBan; inv.dcBan=xmlText(nb,'DChi')||inv.dcBan;
+  inv.stkBan=xmlText(nb,'STKNHang')||xmlText(nb,'STKNH')||xmlText(nb,'TKNH')||xmlText(nb,'SoTK')||xmlText(nb,'STK')||inv.stkBan;
+  inv.nganHangBan=xmlText(nb,'TNHang')||xmlText(nb,'TenNH')||xmlText(nb,'NHang')||inv.nganHangBan; }
+ var nm=xmlFind(root,'NMua');
+ if(nm){ inv.benMua=xmlText(nm,'Ten')||inv.benMua; inv.mstMua=xmlText(nm,'MST')||inv.mstMua; inv.dcMua=xmlText(nm,'DChi')||inv.dcMua; }
+ var nodes=xmlFindAll(root,'HHDVu'); var items=[];
+ nodes.forEach(function(el){ var ten=xmlText(el,'THHDVu'); if(!ten) return;
+  var slRaw=xmlText(el,'SLuong'); var slN=parseFloat(String(slRaw).replace(',','.'));
+  var tsr=xmlText(el,'TSuat'); if(tsr&&/^\d/.test(tsr)&&tsr.indexOf('%')<0) tsr=tsr+'%';
+  items.push({ten:ten, dvt:xmlText(el,'DVTinh'), sl:isNaN(slN)?slRaw:String(slN), donGia:String(parseMoney(xmlText(el,'DGia'))||''), thanhTien:String(parseMoney(xmlText(el,'ThTien'))||''), taxRate:tsr, taxAmt:''}); });
+ if(items.length) inv.items=items;
+ var ttoan=xmlFind(root,'TToan');
+ if(ttoan){
+  var cong=xmlText(ttoan,'TGTCThue')||xmlText(ttoan,'THTCTCKTM'); if(cong) inv.congTienHang=String(parseMoney(cong));
+  var thue=xmlText(ttoan,'TGTThue'); if(thue) inv.tienThue=String(parseMoney(thue));
+  var tong=xmlText(ttoan,'TGTTTBSo'); if(tong) inv.tongTT=String(parseMoney(tong));
+  inv.bangChu=xmlText(ttoan,'TGTTTBChu')||inv.bangChu;
+  var ts=xmlText(ttoan,'TSuat'); if(ts) inv.thueSuat=String(ts).replace('%','').trim();
+ }
+ if(!inv.thueSuat && nodes.length){ var tsEl=xmlFind(nodes[0],'TSuat'); if(tsEl) inv.thueSuat=String(tsEl.textContent||'').replace('%','').trim(); }
+ inv.fromXML=true;
+ inv.raw='Đọc từ file XML hóa đơn điện tử — dữ liệu gốc do bên bán phát hành (số hóa đơn '+inv.soHD+').';
+ inv.status='ok'; inv.statusText='XML — dữ liệu gốc';
+ return true;
+}
+/* ---- Gộp trùng: cùng 1 hóa đơn có cả bản PDF/ảnh và bản XML ---- */
+function mergeKey(inv){ return String(inv.soHD||'').trim().toUpperCase()+'|'+String(inv.kyHieu||'').trim().toUpperCase()+'|'+(parseMoney(inv.tongTT)||0); }
+function mergeDuplicates(){
+ var again=true;
+ while(again){ again=false;
+  for(var i=0;i<invoices.length&&!again;i++){ for(var j=i+1;j<invoices.length;j++){
+   var a=invoices[i], b=invoices[j];
+   if(!a.soHD||!b.soHD||!parseMoney(a.tongTT)) continue;
+   if(mergeKey(a)!==mergeKey(b)) continue;
+   var xmlInv=a.fromXML?a:(b.fromXML?b:null); if(!xmlInv) continue;
+   var other=(xmlInv===a)?b:a;
+   ['ngay','maCQT','maTraCuu','benBan','mstBan','dcBan','stkBan','nganHangBan','benMua','mstMua','dcMua','hinhThucTT','thueSuat','bangChu','raw'].forEach(function(k){ if(!xmlInv[k]&&other[k]) xmlInv[k]=other[k]; });
+   if(!xmlInv.preview&&other.preview){ xmlInv.preview=other.preview; xmlInv.previewType=other.previewType; }
+   if(other.fullCanvas&&!xmlInv.fullCanvas){ xmlInv.fullCanvas=other.fullCanvas; xmlInv.fullUrl=other.fullUrl; xmlInv.cropTop=other.cropTop; xmlInv.cropBottom=other.cropBottom; xmlInv.cropNote=other.cropNote; }
+   if((!xmlInv.items.length||!xmlInv.items[0].ten)&&other.items.length&&other.items[0].ten) xmlInv.items=other.items;
+   xmlInv.merged=true; xmlInv.statusText='Đã gộp PDF + XML';
+   invoices.splice(invoices.indexOf(other),1);
+   cur=invoices.indexOf(xmlInv);
+   again=true; break;
+  } }
+ }
+}
+
+/* ============ OCR + PDF ============ */
+function setProg(pct,msg){ $('#progWrap').classList.add('show'); $('#progBar').style.width=pct+'%'; $('#progText').textContent=msg; }
+async function ocrImage(source, inv){
+ setProg(15,'Đang đọc chữ trên ảnh… lần đầu có thể hơi lâu vì máy phải tải bộ đọc tiếng Việt, đợi một chút nhé.');
+ try{
+  var res=await Tesseract.recognize(source,'vie+eng',{logger:function(m){ if(m.status==='recognizing text') setProg(20+Math.round(m.progress*70),'Đang đọc chữ… '+Math.round(m.progress*100)+'%'); }});
+  parseInvoiceText(res.data.text||'', inv); inv.status='warn'; inv.statusText='Đã đọc — cần kiểm tra';
+ }catch(e){ inv.status='warn'; inv.statusText='Chưa đọc tự động được — nhập tay'; setProg(100,'Chưa đọc tự động được file này (có thể do mạng chậm khi tải bộ đọc). Vẫn nhập tay đầy đủ ở Bước 2 và xuất Excel bình thường nhé.'); }
+}
+/* ---- Auto-focus on the document inside a phone screenshot / photo ----
+   Phone UI bands (status bar, app toolbar, bottom buttons) are flat grey with
+   almost no white; the invoice sheet is near-white. We find the largest
+   near-white vertical band and crop to it (with a small margin). If no clear
+   band exists we keep the full image — extraction only reads labelled invoice
+   fields, so stray text (clock, battery %) is ignored by the parser anyway. */
+function loadImgEl(src){ return new Promise(function(res,rej){ var im=new Image(); im.onload=function(){res(im)}; im.onerror=rej; im.src=src; }); }
+async function autoCrop(file){
+ var url=URL.createObjectURL(file); var img=await loadImgEl(url);
+ var scale=Math.min(1, 1400/img.naturalWidth); var W=Math.round(img.naturalWidth*scale), H=Math.round(img.naturalHeight*scale);
+ var cv=document.createElement('canvas'); cv.width=W; cv.height=H; var ctx=cv.getContext('2d'); ctx.drawImage(img,0,0,W,H);
+ var data; try{ data=ctx.getImageData(0,0,W,H).data; }catch(e){ return {url:url,note:'',top:0,bottom:0,origW:img.naturalWidth,origH:img.naturalHeight}; }
+ function rowWhiteFrac(y){ var white=0,n=0; for(var x=0;x<W;x+=6){ var i=(y*W+x)*4; var r=data[i],g=data[i+1],b=data[i+2]; n++; if(r>225&&g>225&&b>220) white++; } return white/n; }
+ var rows=[]; for(var y=0;y<H;y++) rows.push(rowWhiteFrac(y));
+ function findBand(fromTop){ var run=0,start=-1; var need=Math.max(8,Math.round(H*0.02));
+   if(fromTop){ for(var y2=0;y2<H;y2++){ if(rows[y2]>0.55){ if(start<0)start=y2; run++; if(run>=need) return start; } else { start=-1; run=0; } } return 0; }
+   run=0; var end=-1; for(var y3=H-1;y3>=0;y3--){ if(rows[y3]>0.55){ if(end<0)end=y3; run++; if(run>=need) return end; } else { end=-1; run=0; } } return H-1; }
+ var top=findBand(true), bot=findBand(false);
+ var topPct=Math.round(top/H*100), botPct=Math.round((H-1-bot)/H*100);
+ // Only crop when it looks like a screenshot/photo with real margins (>=4% on some side) and the sheet keeps >=45% of height
+ if((topPct>=4||botPct>=4) && (bot-top)>H*0.45){
+   var m=Math.round(H*0.008); var y0=Math.max(0,top-m), y1=Math.min(H,bot+m);
+   var cc=document.createElement('canvas'); cc.width=W; cc.height=y1-y0; cc.getContext('2d').drawImage(cv,0,y0,W,y1-y0,0,0,W,y1-y0);
+   return {url:cc.toDataURL('image/jpeg',0.92), note:'Đã tự cắt bỏ khoảng '+topPct+'% ở trên và '+botPct+'% ở dưới (phần giao diện điện thoại).', top:topPct, bottom:botPct, fullUrl:url, fullCanvas:cv};
+ }
+ return {url:url, note:'Ảnh không có viền điện thoại rõ rệt — đọc trên toàn ảnh.', top:0, bottom:0, fullUrl:url, fullCanvas:cv};
+}
+function cropByPercent(inv, topPct, botPct){
+ var cv=inv.fullCanvas; if(!cv) return null; var H=cv.height,W=cv.width; var y0=Math.round(H*topPct/100), y1=H-Math.round(H*botPct/100); if(y1-y0<80) return null;
+ var cc=document.createElement('canvas'); cc.width=W; cc.height=y1-y0; cc.getContext('2d').drawImage(cv,0,y0,W,y1-y0,0,0,W,y1-y0); return cc.toDataURL('image/jpeg',0.92);
+}
+function isAllowedName(name){ return /\.(pdf|png|jpe?g|xml|zip)$/i.test(name||''); }
+/* Ghép dòng theo tọa độ: nhóm các mẩu chữ theo trục y (dung sai ~3px), trong mỗi dòng sắp theo x tăng dần.
+   PDF dạng bảng (mẫu VIN/VISNAM) bị xáo thứ tự chữ nếu nối theo thứ tự thô trong file. */
+function pageLines(items){
+ var rows=[];
+ (items||[]).forEach(function(it){ var s=it.str; if(!s||!s.trim()) return; var tr=it.transform||[]; var x=tr[4]||0, y=tr[5]||0;
+  var row=null; for(var i=0;i<rows.length;i++){ if(Math.abs(rows[i].y-y)<=3){ row=rows[i]; break; } }
+  if(!row){ row={y:y,parts:[]}; rows.push(row); }
+  row.parts.push({x:x,s:s});
+ });
+ rows.sort(function(a,b){ return b.y-a.y; });
+ return rows.map(function(r){ r.parts.sort(function(a,b){ return a.x-b.x; }); return r.parts.map(function(p){ return p.s; }).join(' ').replace(/\s+/g,' ').trim(); }).filter(Boolean);
+}
+async function handleFile(file){
+ var fname=file.name||'file';
+ if(/\.zip$/i.test(fname)){
+  setProg(10,'Đang bung file ZIP “'+fname+'”…');
+  if(!window.JSZip){ setProg(100,'Chưa tải được thư viện bung ZIP (mạng chậm). Đợi vài giây rồi thử lại, hoặc bung ZIP ra trước rồi chọn từng file bên trong.'); return; }
+  try{
+   var zip=await JSZip.loadAsync(file);
+   var names=Object.keys(zip.files).filter(function(n){ return !zip.files[n].dir && isAllowedName(n) && !/\.zip$/i.test(n); });
+   if(!names.length){ setProg(100,'Trong file ZIP “'+fname+'” không thấy file PDF / XML / ảnh nào. Kiểm tra lại nhé.'); return; }
+   setProg(20,'ZIP “'+fname+'” có '+names.length+' file hợp lệ — đang nạp từng file…');
+   for(var zi=0;zi<names.length;zi++){ var blob=await zip.files[names[zi]].async('blob'); await handleFile(new File([blob], names[zi].split('/').pop())); }
+  }catch(e){ setProg(100,'Chưa bung được file ZIP “'+fname+'”. Bung ra trước rồi chọn từng file bên trong nhé.'); }
+  return;
+ }
+ var inv=blankInvoice(fname); invoices.push(inv); cur=invoices.length-1; syncForm();
+ if(/\.xml$/i.test(fname)){
+  setProg(30,'Đang đọc file XML “'+fname+'”…');
+  try{
+   var xtxt=await file.text();
+   if(parseXmlInvoice(xtxt,inv)){ setProg(100,'Xong! Đã đọc file XML — đây là dữ liệu gốc của hóa đơn điện tử nên chính xác nhất. Kiểm tra nhanh ở Bước 2 nhé.'); }
+   else { inv.status='warn'; inv.statusText='XML chưa đọc được — nhập tay'; inv.raw=xtxt.slice(0,4000); setProg(100,'File XML này chưa đúng chuẩn hóa đơn điện tử quen thuộc nên tool chưa đọc tự động được. Nhập tay ở Bước 2 — vẫn xuất Excel bình thường, không sao cả.'); }
+  }catch(e){ inv.status='warn'; inv.statusText='XML chưa đọc được — nhập tay'; setProg(100,'Chưa mở được file XML này. Nhập tay ở Bước 2 nhé.'); }
+  mergeDuplicates(); syncForm(); document.getElementById('step2').scrollIntoView({behavior:'smooth'}); return;
+ }
+ var isPdf=/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name);
+ try{
+  if(isPdf){
+   setProg(10,'Đang mở file PDF “'+file.name+'”…');
+   if(!window.pdfjsLib) throw new Error('no pdfjs');
+   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+   var buf=await file.arrayBuffer(); var pdf=await pdfjsLib.getDocument({data:buf}).promise;
+   var allText='';
+   for(var p=1;p<=pdf.numPages;p++){ var page=await pdf.getPage(p); var tc=await page.getTextContent(); allText+=pageLines(tc.items).join('\n')+'\n'; }
+   // render page 1 preview
+   var pg1=await pdf.getPage(1); var vp=pg1.getViewport({scale:1.6}); var cv=document.createElement('canvas'); cv.width=vp.width; cv.height=vp.height; await pg1.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise; inv.preview=cv; inv.previewType='canvas';
+   if(allText.replace(/\s/g,'').length>120){ setProg(70,'PDF này có chữ sẵn — đang tách số liệu…'); parseInvoiceText(allText,inv); inv.status='warn'; inv.statusText='Đã tách chữ — cần kiểm tra'; setProg(100,'Xong! Đã tách được chữ từ PDF. Kiểm tra lại ở Bước 2 nhé.'); }
+   else { setProg(30,'PDF này là ảnh scan — đang đọc chữ bằng OCR…'); await ocrImage(cv.toDataURL('image/png'),inv); setProg(100,'Xong! Đã đọc xong PDF scan. Kiểm tra lại ở Bước 2 nhé.'); }
+  } else {
+   setProg(12,'Đang tìm vùng tờ hóa đơn trong ảnh (bỏ phần giao diện điện thoại)…');
+   var cr=await autoCrop(file); inv.preview=cr.url; inv.previewType='img'; inv.fullCanvas=cr.fullCanvas; inv.fullUrl=cr.fullUrl; inv.cropNote=cr.note; inv.cropTop=cr.top; inv.cropBottom=cr.bottom;
+   syncForm();
+   await ocrImage(cr.url,inv);
+   if(!inv.soHD && cr.fullUrl && cr.url!==cr.fullUrl){ setProg(92,'Vùng đã cắt chưa thấy số hóa đơn — đang đọc lại trên toàn ảnh gốc để chắc chắn…'); var keep={soHD:inv.soHD}; await ocrImage(cr.fullUrl,inv); }
+   setProg(100,'Xong! Đã đọc xong ảnh. '+(cr.note||'')+' Kiểm tra lại số ở Bước 2 trước khi xuất Excel nhé.');
+  }
+ }catch(e){ inv.status='warn'; inv.statusText='Chưa đọc tự động được — nhập tay'; setProg(100,'Chưa mở/đọc tự động được file này. Vẫn xem ảnh gốc và nhập tay ở Bước 2, xuất Excel bình thường nhé.'); }
+ mergeDuplicates(); syncForm(); document.getElementById('step2').scrollIntoView({behavior:'smooth'});
+}
+var drop=$('#dropZone');
+['dragenter','dragover'].forEach(function(ev){ drop.addEventListener(ev,function(e){e.preventDefault(); drop.classList.add('drag')}) });
+['dragleave','drop'].forEach(function(ev){ drop.addEventListener(ev,function(e){e.preventDefault(); drop.classList.remove('drag')}) });
+async function processFiles(allFiles){
+ var files=(allFiles||[]).filter(function(f){ return isAllowedName(f.name); });
+ if(!files.length){ setProg(100,'Chưa thấy file hợp lệ nào (chỉ nhận PDF, ảnh JPG/PNG, XML, ZIP). Kiểm tra lại nhé.'); return; }
+ setProg(5,'Đã nhận '+files.length+' file hợp lệ — đang đọc từng file…');
+ for(var i=0;i<files.length;i++) await handleFile(files[i]);
+ mergeDuplicates(); syncForm();
+}
+function collectFromEntry(entry,out){
+ return new Promise(function(resolve){
+  if(!entry){ resolve(); return; }
+  if(entry.isFile){ entry.file(function(f){ out.push(f); resolve(); },function(){ resolve(); }); }
+  else if(entry.isDirectory){ var reader=entry.createReader(); var batch=function(){ reader.readEntries(function(entries){ if(!entries.length){ resolve(); return; } Promise.all(entries.map(function(en){ return collectFromEntry(en,out); })).then(batch); },function(){ resolve(); }); }; batch(); }
+  else resolve();
+ });
+}
+drop.addEventListener('drop',async function(e){
+ var files=[]; var used=false;
+ var items=e.dataTransfer?e.dataTransfer.items:null;
+ if(items&&items.length&&items[0].webkitGetAsEntry){
+  var entries=[]; var hasDir=false;
+  for(var i=0;i<items.length;i++){ var en=items[i].webkitGetAsEntry(); if(en){ entries.push(en); if(en.isDirectory) hasDir=true; } }
+  if(hasDir){ used=true; for(var k=0;k<entries.length;k++) await collectFromEntry(entries[k],files); }
+ }
+ if(!used) files=Array.prototype.slice.call(e.dataTransfer.files||[]);
+ await processFiles(files);
+});
+$('#fileInput').addEventListener('change',async function(){ await processFiles(Array.prototype.slice.call(this.files||[])); this.value=''; });
+$('#folderInput').addEventListener('change',async function(){ await processFiles(Array.prototype.slice.call(this.files||[])); this.value=''; });
+
+/* ============ Export Excel ============ */
+/* Ngày xuất ra Excel dạng số serial thuần ngày (không kèm giờ) — tránh lệch giờ/phút theo múi giờ máy */
+function invDate(inv){ var iso=toISODate(inv.ngay); if(!iso) return ''; var p=iso.split('-'); return Math.round(Date.UTC(+p[0],+p[1]-1,+p[2])/86400000)+25569; }
+/* Thuế theo TỪNG DÒNG cho sheet phẳng HoaDon: hóa đơn in sẵn tiền thuế theo dòng thì dùng số in sẵn;
+   không in thì tính = làm tròn(Thành tiền × thuế suất dòng), rồi dồn phần lẻ vào dòng có thành tiền
+   lớn nhất (trong các dòng tự tính) để tổng tiền thuế các dòng khớp đúng tiền thuế của cả hóa đơn. */
+function flatTax(inv){
+ var invRate=String(inv.thueSuat||'').trim();
+ var rows=inv.items.map(function(it){
+  var rate=String(it.taxRate||'').trim();
+  if(!rate){ if(/^\d{1,2}(?:[.,]\d+)?$/.test(invRate)) rate=invRate+'%'; else if(/^(KKKNT|KCT)$/i.test(invRate)) rate=invRate.toUpperCase(); }
+  var printed=(it.taxAmt!==''&&it.taxAmt!=null);
+  var tax=null;
+  if(printed) tax=parseMoney(it.taxAmt);
+  else { var m=/^(\d{1,2}(?:[.,]\d+)?)%$/.exec(rate); if(m) tax=Math.round(parseMoney(it.thanhTien)*parseFloat(m[1].replace(',','.'))/100); else if(rate) tax=0; }
+  return {rate:rate, tax:tax, tt:parseMoney(it.thanhTien), computed:!printed};
+ });
+ var invTax=parseMoney(inv.tienThue);
+ if(invTax){ var sum=0; rows.forEach(function(r){ if(r.tax!=null) sum+=r.tax; });
+  var diff=Math.round(invTax-sum);
+  if(diff!==0){ var best=-1,bt=-1; rows.forEach(function(r,i){ if(r.computed&&r.tax!=null&&r.tt>bt){ bt=r.tt; best=i; } }); if(best>=0) rows[best].tax+=diff; }
+ }
+ return rows;
+}
+function buildWorkbook(){
+ var wb=XLSX.utils.book_new();
+ var list=exportInvoices(); /* bỏ qua hóa đơn trống — không lọt dòng trắng vào file xuất */
+ /* Sheet đầu tiên theo mẫu khách: 1 bảng phẳng, mỗi dòng hàng hóa là 1 dòng, 11 cột */
+ var head0=['SỐ HÓA ĐƠN','NGÀY HÓA ĐƠN','NHÀ CUNG CẤP','NỘI DUNG/SẢN PHẨM','ĐƠN VỊ TÍNH','SỐ LƯỢNG','ĐƠN GIÁ','THÀNH TIỀN','THUẾ SUẤT GTGT','TIỀN THUẾ GTGT','TỔNG TIỀN THANH TOÁN'];
+ var rows0=[];
+ list.forEach(function(inv){ var ft=flatTax(inv); inv.items.forEach(function(it,idx){ if(!itemHasData(it)) return; rows0.push([inv.soHD, invDate(inv), inv.benBan, it.ten, it.dvt, parseMoney(it.sl)||'', parseMoney(it.donGia)||'', parseMoney(it.thanhTien)||'', ft[idx].rate, (ft[idx].tax==null?'':ft[idx].tax), parseMoney(inv.tongTT)||'']); }); });
+ var ws0=XLSX.utils.aoa_to_sheet([head0].concat(rows0),{cellDates:true});
+ /* Độ rộng cột tường minh: cột số đủ rộng để số tiền không bị chật/tràn đè nhau khi mở trên điện thoại */
+ ws0['!cols']=[{wch:13},{wch:12},{wch:36},{wch:42},{wch:10},{wch:11},{wch:15},{wch:15},{wch:11},{wch:14},{wch:16}];
+ rows0.forEach(function(r,ri){ var c=XLSX.utils.encode_cell({r:ri+1,c:1}); if(ws0[c]&&ws0[c].v) ws0[c].z='dd/mm/yyyy'; var fm={5:'#,##0.##',6:'#,##0.####',7:'#,##0',9:'#,##0',10:'#,##0'}; Object.keys(fm).forEach(function(ci){ var cc=XLSX.utils.encode_cell({r:ri+1,c:+ci}); if(ws0[cc]&&typeof ws0[cc].v==='number') ws0[cc].z=fm[ci]; }); [2,3].forEach(function(ci){ var wc=XLSX.utils.encode_cell({r:ri+1,c:ci}); if(ws0[wc]) ws0[wc].s={alignment:{wrapText:true,vertical:'top'}}; }); });
+ XLSX.utils.book_append_sheet(wb,ws0,'HoaDon');
+ var head1=['STT','Ngày HĐ','Số HĐ','Ký hiệu','Mã CQT','Bên bán','MST bên bán','Địa chỉ bên bán','STK bên bán','Ngân hàng bên bán','Bên mua','MST bên mua','Địa chỉ bên mua','Hình thức TT','Cộng tiền hàng','Thuế suất %','Tiền thuế GTGT','Tổng thanh toán','Số tiền bằng chữ','Mã tra cứu','File nguồn'];
+ var rows1=list.map(function(inv,i){ return [i+1, invDate(inv), inv.soHD, inv.kyHieu, inv.maCQT, inv.benBan, inv.mstBan, inv.dcBan, inv.stkBan, inv.nganHangBan, inv.benMua, inv.mstMua, inv.dcMua, inv.hinhThucTT, parseMoney(inv.congTienHang)||'', parseFloat(String(inv.thueSuat).replace(',','.'))||'', parseMoney(inv.tienThue)||'', parseMoney(inv.tongTT)||'', inv.bangChu, inv.maTraCuu, inv.fileNguon]; });
+ var ws1=XLSX.utils.aoa_to_sheet([head1].concat(rows1),{cellDates:true});
+ ws1['!cols']=[{wch:6},{wch:12},{wch:13},{wch:11},{wch:34},{wch:36},{wch:14},{wch:44},{wch:16},{wch:26},{wch:36},{wch:14},{wch:44},{wch:12},{wch:15},{wch:10},{wch:14},{wch:16},{wch:52},{wch:16},{wch:30}];
+ // date format + money format
+ rows1.forEach(function(r,ri){ var c=XLSX.utils.encode_cell({r:ri+1,c:1}); if(ws1[c]&&ws1[c].v) ws1[c].z='dd/mm/yyyy'; [14,16,17].forEach(function(ci){ var cc=XLSX.utils.encode_cell({r:ri+1,c:ci}); if(ws1[cc]) ws1[cc].z='#,##0'; }); });
+ XLSX.utils.book_append_sheet(wb,ws1,'DanhSachHoaDon');
+ var head2=['STT','Số HĐ','Ngày HĐ','Bên bán','Bên mua','Tên hàng hóa / dịch vụ','ĐVT','Số lượng','Đơn giá','Thành tiền','Kiểm tra (SL × Đơn giá)','Chênh lệch','Thuế suất dòng'];
+ var rows2=[]; list.forEach(function(inv){ inv.items.forEach(function(it,idx){ if(!itemHasData(it)) return; var sl=parseMoney(it.sl),dg=parseMoney(it.donGia),tt=parseMoney(it.thanhTien); rows2.push([idx+1,inv.soHD,invDate(inv),inv.benBan,inv.benMua,it.ten,it.dvt,sl||'',dg||'',tt||'',(sl&&dg)?Math.round(sl*dg):'',(sl&&dg&&tt)?(tt-Math.round(sl*dg)):'',it.taxRate||'']); }); });
+ var ws2=XLSX.utils.aoa_to_sheet([head2].concat(rows2),{cellDates:true}); ws2['!cols']=[{wch:6},{wch:13},{wch:12},{wch:36},{wch:36},{wch:46},{wch:9},{wch:11},{wch:15},{wch:15},{wch:18},{wch:12},{wch:13}];
+ rows2.forEach(function(r,ri){ var c=XLSX.utils.encode_cell({r:ri+1,c:2}); if(ws2[c]&&ws2[c].v) ws2[c].z='dd/mm/yyyy'; [7,8,9,10].forEach(function(ci){ var cc=XLSX.utils.encode_cell({r:ri+1,c:ci}); if(ws2[cc]) ws2[cc].z=(ci===7||ci===8)?'#,##0.##':'#,##0'; }); });
+ XLSX.utils.book_append_sheet(wb,ws2,'ChiTietHangHoa');
+ var rows3=[]; list.forEach(function(inv,ii){ if(list.length>1) rows3.push(['=== HÓA ĐƠN '+(ii+1)+' — Số '+(inv.soHD||'')+' ===','']);
+  [['Ngày hóa đơn',inv.ngay],['Số hóa đơn',inv.soHD],['Ký hiệu',inv.kyHieu],['Mã CQT',inv.maCQT],['Mã tra cứu',inv.maTraCuu],['Bên bán',inv.benBan],['MST bên bán',inv.mstBan],['Địa chỉ bên bán',inv.dcBan],['STK bên bán',inv.stkBan],['Ngân hàng bên bán',inv.nganHangBan],['Bên mua',inv.benMua],['MST bên mua',inv.mstMua],['Địa chỉ bên mua',inv.dcMua],['Hình thức thanh toán',inv.hinhThucTT],['Cộng tiền hàng',parseMoney(inv.congTienHang)||''],['Thuế suất %',inv.thueSuat],['Tiền thuế GTGT',parseMoney(inv.tienThue)||''],['Tổng thanh toán',parseMoney(inv.tongTT)||''],['Số tiền bằng chữ',inv.bangChu],['File nguồn',inv.fileNguon]].forEach(function(p){rows3.push(p)});
+  rows3.push(['— Hàng hóa —','']); inv.items.forEach(function(it,idx){ if(!itemHasData(it)) return; rows3.push([(idx+1)+'. '+it.ten, (it.dvt||'')+' | SL: '+(it.sl||'')+' | Đơn giá: '+fmt(parseMoney(it.donGia))+' | Thành tiền: '+fmt(parseMoney(it.thanhTien))]); }); rows3.push(['','']); });
+ var ws3=XLSX.utils.aoa_to_sheet(rows3); ws3['!cols']=[{wch:24},{wch:90}];
+ XLSX.utils.book_append_sheet(wb,ws3,'ThongTinHoaDon');
+ return wb;
+}
+function doExport(){
+ if(!invoices.length||!current()){ setProg(100,'Chưa có hóa đơn nào để xuất — tải file lên ở Bước 1 trước nhé.'); document.getElementById('step1').scrollIntoView({behavior:'smooth'}); return; }
+ // flush current form values first
+ document.querySelectorAll('[data-f]').forEach(function(el){ current()[el.dataset.f]=el.value; });
+ var listX=exportInvoices(); var skippedX=invoices.length-listX.length;
+ if(!listX.length){ setProg(100,'Chưa có hóa đơn nào có số liệu để xuất — hóa đơn trống (chưa có dòng hàng nào) không được đưa vào file. Tải file lên ở Bước 1 hoặc nhập số liệu ở Bước 2 trước nhé.'); document.getElementById('step1').scrollIntoView({behavior:'smooth'}); return; }
+ if(!window.XLSX){ setProg(100,'Chưa tải được thư viện Excel (mạng chậm). Đợi vài giây rồi bấm lại, hoặc dùng nút CSV dự phòng bên dưới.'); document.getElementById('step1').scrollIntoView({behavior:'smooth'}); return; }
+ var wb=buildWorkbook(); var name='HoaDon_XuatExcel_'+new Date().toISOString().slice(0,10)+'.xlsx'; XLSX.writeFile(wb,name);
+ setProg(100,'Đã tải file Excel: '+name+' — mở file trong mục Tải xuống (Downloads) nhé.'+(skippedX>0?' Đã bỏ qua '+skippedX+' hóa đơn trống (chưa có dòng hàng).':''));
+}
+function doCsv(){
+ if(!invoices.length||!current()){ setProg(100,'Chưa có hóa đơn nào để xuất — tải file lên ở Bước 1 trước nhé.'); document.getElementById('step1').scrollIntoView({behavior:'smooth'}); return; }
+ document.querySelectorAll('[data-f]').forEach(function(el){ current()[el.dataset.f]=el.value; });
+ var listC=exportInvoices(); var skippedC=invoices.length-listC.length;
+ if(!listC.length){ setProg(100,'Chưa có hóa đơn nào có số liệu để xuất — hóa đơn trống (chưa có dòng hàng nào) không được đưa vào file.'); return; }
+ var lines=['SoHD,Ngay,BenBan,MSTBan,BenMua,MSTMua,CongTienHang,TienThue,TongThanhToan'];
+ listC.forEach(function(inv){ lines.push([inv.soHD,inv.ngay,inv.benBan,inv.mstBan,inv.benMua,inv.mstMua,parseMoney(inv.congTienHang),parseMoney(inv.tienThue),parseMoney(inv.tongTT)].map(function(x){return '"'+String(x==null?'':x).replace(/"/g,'""')+'"'}).join(',')); });
+ var blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'}); var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='HoaDon.csv'; a.click();
+ setProg(100,'Đã tải bản CSV dự phòng: HoaDon.csv.'+(skippedC>0?' Đã bỏ qua '+skippedC+' hóa đơn trống (chưa có dòng hàng).':''));
+}
+$('#btnExport').onclick=doExport; $('#btnExport2').onclick=doExport; $('#btnExportCsv').onclick=doCsv;
+
+/* ============ Tabs + mã Apps Script (Tab 2) ============ */
+function showTab(which){
+ var bill = which==='bill';
+ $('#tabBill').hidden=!bill; $('#tabEmail').hidden=bill;
+ $('#tabBtnBill').classList.toggle('on',bill); $('#tabBtnEmail').classList.toggle('on',!bill);
+ document.querySelector('.stickyBar').style.display=bill?'':'none';
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+$('#tabBtnBill').onclick=function(){ showTab('bill'); };
+$('#tabBtnEmail').onclick=function(){ showTab('email'); };
+$('#btnGoEmail').onclick=function(){ showTab('email'); };
+var GS_CODE=(document.getElementById('gsCode').textContent||'').replace(/^\n+/,'').replace(/\s+$/,'')+'\n';
+document.getElementById('codePre').textContent=GS_CODE;
+$('#btnCopyCode').onclick=async function(){
+ var done=false;
+ try{ await navigator.clipboard.writeText(GS_CODE); done=true; }catch(e){}
+ if(!done){ var ta=document.createElement('textarea'); ta.value=GS_CODE; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); try{ done=document.execCommand('copy'); }catch(e){} ta.remove(); }
+ var msg=$('#copyMsg');
+ if(done){ msg.classList.add('show'); msg.scrollIntoView({behavior:'smooth',block:'center'}); }
+ else { msg.className='warnBox show mid copyMsg'; msg.innerHTML='⚠️ Trình duyệt chưa cho sao chép tự động. Bấm giữ (hoặc Ctrl+A) trong khung mã bên dưới để chọn hết, rồi Ctrl+C sao chép nhé.'; }
+};
+$('#btnDlCode').onclick=function(){
+ var blob=new Blob([GS_CODE],{type:'text/plain;charset=utf-8'}); var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='Code.gs'; a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); },2000);
+};
+
+syncForm();
+</script>
+</body>
+</html>
